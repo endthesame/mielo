@@ -1,0 +1,22 @@
+export type Deck = {
+  id: string;
+  name: string;
+  targetLanguage: string;
+  translationLanguage: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type NewDeck = {
+  name: string;
+  targetLanguage: string;
+  translationLanguage: string;
+};
+
+export interface DeckRepository {
+  list(): Promise<Deck[]>;
+  create(input: NewDeck): Promise<Deck>;
+  rename(id: string, name: string): Promise<Deck>;
+  remove(id: string): Promise<void>;
+  countDue(id: string, now: Date): Promise<number>;
+}

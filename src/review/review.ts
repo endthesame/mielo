@@ -5,6 +5,8 @@ export type DueCard = {
   text: string;
   translation: string;
   reading: string | null;
+  meaningNote: string | null;
+  example: string | null;
   stateJson: string;
   imageName: string | null;
   acceptedAnswers: string;

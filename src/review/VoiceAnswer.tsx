@@ -4,6 +4,7 @@ import { requestRecordingPermissionsAsync, setAudioModeAsync, useAudioStream } f
 import { speechEngine, type SpeechLanguage } from '../speech';
 import type { LiveSpeechSession } from '../speech/speech-engine';
 import { colors } from '../theme';
+import { Host, Icon } from '@expo/ui';
 import { normalizeAnswer } from './evaluate-answer';
 import { matchLiveAnswer } from './live-match';
 
@@ -120,7 +121,6 @@ export default function VoiceAnswer({ language, variants, onResult, onMatch }: P
 
   useEffect(() => {
     alive.current = true;
-    void start();
     const subscription = AppState.addEventListener('change', (state) => {
       if (state !== 'active') {
         if (alive.current) setMessage('Прослушивание остановлено.');
@@ -134,10 +134,10 @@ export default function VoiceAnswer({ language, variants, onResult, onMatch }: P
     <Pressable disabled={phase === 'stopping'} onPress={() => {
       if (phase === 'idle') void start();
       else { setMessage('Прослушивание остановлено.'); stop(); }
-    }} style={styles.button} accessibilityRole="button">
-      <Text>{phase === 'preparing' ? 'Отменить подготовку' : phase === 'listening' ? 'Остановить прослушивание' : phase === 'stopping' ? 'Останавливаем…' : 'Начать прослушивание'}</Text>
+    }} style={[styles.button, phase !== 'idle' && styles.active]} accessibilityRole="button" accessibilityLabel={phase === 'idle' ? 'Включить голосовой ввод' : 'Остановить голосовой ввод'} accessibilityState={{ disabled: phase === 'stopping', selected: phase === 'listening' }}>
+      <Host matchContents pointerEvents="none"><Icon name={phase === 'idle' ? 'mic' : 'mic.fill'} size={22} color={colors.primaryDark} /></Host>
     </Pressable>
-    {message ? <Text style={styles.message}>{message}</Text> : null}
+    {message ? <Text style={styles.message} accessibilityLiveRegion="polite">{message}</Text> : null}
   </View>;
 }
-const styles = StyleSheet.create({ button: { backgroundColor: colors.softBlue, padding: 16, borderRadius: 14, alignItems: 'center', marginBottom: 12 }, message: { color: colors.muted, marginBottom: 12 } });
+const styles = StyleSheet.create({ button: { backgroundColor: colors.softBlue, width: 52, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center' }, active: { backgroundColor: colors.peach, borderWidth: 2, borderColor: colors.orange }, message: { color: colors.muted, marginTop: 8, maxWidth: 200 } });

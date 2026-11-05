@@ -11,8 +11,13 @@ import ReviewScreen from './src/review/ReviewScreen';
 import { reviewRepository } from './src/review/review-repository';
 import SettingsScreen from './src/settings/SettingsScreen';
 import { colors } from './src/theme';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function App() {
+  return <GestureHandlerRootView style={{ flex: 1 }}><AppContent /></GestureHandlerRootView>;
+}
+
+function AppContent() {
   const [screen, setScreen] = useState<'welcome' | 'decks' | 'speech' | 'settings'>('welcome');
   const [selectedDeck, setSelectedDeck] = useState<Deck | null>(null);
   const [reviewing, setReviewing] = useState(false);

@@ -7,7 +7,9 @@ import type { DueCard, ReviewRepository } from './review';
 
 export async function getDueCards(deckId: string, now: Date): Promise<DueCard[]> {
   const db = await getDatabase();
-  return db.getAllAsync<DueCard>(`SELECT c.id AS cardId, v.text, v.translation, v.reading, v.accepted_answers AS acceptedAnswers, s.state_json AS stateJson, m.local_uri AS imageName
+  return db.getAllAsync<DueCard>(`SELECT c.id AS cardId, v.text, v.translation, v.reading, v.meaning_note AS meaningNote,
+    (SELECT e.text FROM examples e WHERE e.vocabulary_id = v.id ORDER BY e.rowid LIMIT 1) AS example,
+    v.accepted_answers AS acceptedAnswers, s.state_json AS stateJson, m.local_uri AS imageName
     FROM learning_cards c JOIN vocabulary_items v ON v.id = c.vocabulary_id
     JOIN decks d ON d.id = v.deck_id JOIN review_states s ON s.card_id = c.id
     LEFT JOIN vocabulary_media vm ON vm.vocabulary_id = v.id LEFT JOIN media_assets m ON m.id = vm.media_id

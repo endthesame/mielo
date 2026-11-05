@@ -10,6 +10,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { speechEngine, type SpeechLanguage } from './speech';
+import { colors } from './theme';
 
 const recordingOptions = {
   ...RecordingPresets.HIGH_QUALITY,
@@ -111,7 +112,7 @@ export default function SpeechScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Mielo</Text>
+      <Text style={styles.title}>Отладка</Text>
       <Text style={styles.subtitle}>Проверка записи голоса</Text>
       <View style={styles.languages}>
         {(['ko', 'ja'] as const).map((item) => (
@@ -146,20 +147,20 @@ export default function SpeechScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
   },
   title: { fontSize: 32, fontWeight: '700' },
-  subtitle: { marginTop: 8, fontSize: 16, color: '#555' },
+  subtitle: { marginTop: 8, fontSize: 16, color: colors.muted },
   languages: { flexDirection: 'row', gap: 20, marginTop: 24 },
-  language: { color: '#555', padding: 8 },
-  selectedLanguage: { color: '#111', fontWeight: '700', textDecorationLine: 'underline' },
+  language: { color: colors.muted, padding: 12, borderRadius: 12, backgroundColor: colors.surface },
+  selectedLanguage: { color: colors.primaryDark, fontWeight: '700', backgroundColor: colors.softBlue },
   result: { marginTop: 20, fontSize: 18, textAlign: 'center' },
-  message: { marginTop: 32, marginBottom: 20, textAlign: 'center', color: '#444' },
-  button: { backgroundColor: '#333', borderRadius: 10, paddingVertical: 14, paddingHorizontal: 20 },
+  message: { marginTop: 32, marginBottom: 20, textAlign: 'center', color: colors.muted },
+  button: { backgroundColor: colors.primary, borderRadius: 16, paddingVertical: 14, paddingHorizontal: 20 },
   buttonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
   secondaryButton: { marginTop: 16, padding: 12 },
-  secondaryButtonText: { color: '#333', fontWeight: '600', fontSize: 16 },
+  secondaryButtonText: { color: colors.primaryDark, fontWeight: '600', fontSize: 16 },
 });

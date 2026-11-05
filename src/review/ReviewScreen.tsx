@@ -8,6 +8,7 @@ import { matchesAnswer } from './evaluate-answer';
 import { matchLiveAnswer } from './live-match';
 import { imageUri } from '../media/media-store';
 import { getVoiceEnabled } from '../settings/settings-repository';
+import { colors } from '../theme';
 import { initialReviewFlow, reviewFlowReducer, type RecallChoice } from './review-flow';
 
 const ratings: { title: string; value: Grade }[] = [
@@ -60,10 +61,10 @@ export default function ReviewScreen({ deck, repository, onClose }: { deck: Deck
   return <View style={styles.container}>
     <Pressable onPress={onClose} disabled={saving}><Text style={styles.link}>← Вернуться к колоде</Text></Pressable>
     <Text style={styles.title}>Повторение · {deck.name}</Text>
-    {loading ? <Text>Загружаем…</Text> : !card ? <><Text>Карточек к повторению сейчас нет.</Text><Pressable onPress={load}><Text style={styles.link}>Обновить</Text></Pressable></> : <>
+    {loading ? <Text>Загружаем…</Text> : !card ? <><View style={styles.card}><Text style={styles.cue}>На сегодня всё</Text><Text style={styles.hint}>Карточек к повторению сейчас нет.</Text></View><Pressable onPress={load}><Text style={styles.link}>Обновить</Text></Pressable></> : <>
       <Text style={styles.hint}>Осталось в этой сессии: {queue.length}</Text>
-      {card.imageName && <Image source={{ uri: imageUri(card.imageName) }} style={styles.image} resizeMode="contain" />}
-      <Text style={styles.cue}>{card.translation}</Text>
+      <View style={styles.card}><Text style={styles.cardLabel}>ВСПОМНИТЕ СЛОВО</Text>{card.imageName && <Image source={{ uri: imageUri(card.imageName) }} style={styles.image} resizeMode="contain" />}
+      <Text style={styles.cue}>{card.translation}</Text></View>
       {!flow.revealed ? <>
         {voiceEnabled && (deck.targetLanguage === 'ko' || deck.targetLanguage === 'ja') && <VoiceAnswer key={card.cardId}
           language={deck.targetLanguage} variants={[card.text, card.reading, ...(JSON.parse(card.acceptedAnswers) as string[])]}
@@ -89,7 +90,7 @@ export default function ReviewScreen({ deck, repository, onClose }: { deck: Deck
         {card.reading && <Text style={styles.hint}>{card.reading}</Text>}
         <Text style={styles.hint}>Как хорошо вы вспомнили слово?</Text>
         <Pressable onPress={resetAnswer} disabled={saving}><Text style={styles.link}>Повторить ответ</Text></Pressable>
-        <View style={styles.ratings}>{ratings.map((rating) => <Pressable key={rating.value} style={styles.rating} disabled={saving} onPress={() => submit(rating.value)}><Text>{rating.title}</Text></Pressable>)}</View>
+        <View style={styles.ratings}>{ratings.map((rating) => <Pressable key={rating.value} style={styles.rating} disabled={saving} onPress={() => submit(rating.value)}><Text style={styles.ratingText}>{rating.title}</Text></Pressable>)}</View>
       </>}
     </>}
     {error && <><Text style={styles.error}>{error}</Text><Pressable onPress={load}><Text style={styles.link}>Обновить очередь</Text></Pressable></>}
@@ -97,14 +98,14 @@ export default function ReviewScreen({ deck, repository, onClose }: { deck: Deck
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24 }, title: { fontSize: 24, fontWeight: '700', marginVertical: 24 },
-  link: { color: '#315bb2', paddingVertical: 8 }, hint: { color: '#555', marginVertical: 12 },
-  cue: { fontSize: 26, marginVertical: 24 }, answer: { fontSize: 24, fontWeight: '600' },
-  input: { borderColor: '#aaa', borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 16 },
-  button: { backgroundColor: '#333', padding: 14, borderRadius: 8, alignItems: 'center' },
-  buttonText: { color: '#fff', fontWeight: '600' }, ratings: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  selfActions: { flexDirection: 'row', gap: 12, marginTop: 12 },
-  selfButton: { flex: 1, padding: 14, backgroundColor: '#eee', borderRadius: 8, alignItems: 'center' },
-  rating: { padding: 12, backgroundColor: '#eee', borderRadius: 8 }, error: { color: '#b00020', marginTop: 16 },
-  image: { width: 200, height: 160, marginVertical: 8 },
+  container: { padding: 24 }, title: { color: colors.text, fontSize: 27, fontWeight: '800', marginVertical: 20 },
+  link: { color: colors.primaryDark, paddingVertical: 12, fontWeight: '600' }, hint: { color: colors.muted, marginVertical: 12, lineHeight: 21 },
+  card: { backgroundColor: colors.surface, borderRadius: 24, padding: 24, minHeight: 190, justifyContent: 'center', marginVertical: 12, borderBottomWidth: 4, borderBottomColor: colors.border },
+  cardLabel: { color: colors.primaryDark, fontSize: 11, letterSpacing: 1.2, fontWeight: '700' }, cue: { color: colors.text, fontSize: 30, fontWeight: '700', marginVertical: 24 }, answer: { color: colors.text, fontSize: 28, fontWeight: '700', marginTop: 12 },
+  input: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: 14, padding: 14, marginBottom: 16, fontSize: 16 },
+  button: { backgroundColor: colors.primary, borderBottomColor: colors.primaryDark, borderBottomWidth: 4, padding: 16, borderRadius: 16, alignItems: 'center' },
+  buttonText: { color: colors.surface, fontWeight: '700', fontSize: 16 }, ratings: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  selfActions: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 12 }, selfButton: { flexGrow: 1, padding: 16, backgroundColor: colors.softBlue, borderRadius: 14, alignItems: 'center' },
+  rating: { width: '48%', padding: 16, backgroundColor: colors.softBlue, borderRadius: 14, alignItems: 'center' }, ratingText: { color: colors.primaryDark, fontWeight: '700' },
+  error: { color: colors.danger, marginTop: 16 }, image: { width: '100%', height: 160, marginVertical: 8 },
 });

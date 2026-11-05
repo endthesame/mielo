@@ -1,3 +1,4 @@
+import { colors } from '../theme';
 import { useEffect, useState } from 'react';
 import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -36,4 +37,4 @@ export default function WordImage({ wordId }: { wordId: string }) {
     {error ? <Text style={styles.error}>{error}</Text> : null}
   </View>;
 }
-const styles = StyleSheet.create({ container: { marginVertical: 8 }, image: { width: 160, height: 120 }, link: { color: '#315bb2', paddingVertical: 8 }, error: { color: '#b00020' } });
+const styles = StyleSheet.create({ container: { marginVertical: 8 }, image: { width: 160, height: 120 }, link: { color: colors.primaryDark, paddingVertical: 8 }, error: { color: colors.danger } });

@@ -1,3 +1,4 @@
+import { colors } from '../theme';
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { examplesRepository, type Example } from '../database/examples-repository';
@@ -46,6 +47,6 @@ export default function Examples({ wordId }: { wordId: string }) {
     {error ? <Text style={styles.error}>{error}</Text> : null}
   </View>;
 }
-const styles = StyleSheet.create({ container: { padding: 12, backgroundColor: '#f5f5f5', marginTop: 8 }, heading: { fontWeight: '600', marginBottom: 8 },
-  input: { borderWidth: 1, borderColor: '#aaa', borderRadius: 8, padding: 10, marginVertical: 4 },
-  example: { marginVertical: 6 }, hint: { color: '#555' }, link: { color: '#315bb2', paddingVertical: 8 }, error: { color: '#b00020' } });
+const styles = StyleSheet.create({ container: { padding: 12, backgroundColor: colors.background, marginTop: 8 }, heading: { fontWeight: '600', marginBottom: 8 },
+  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 10, marginVertical: 4 },
+  example: { marginVertical: 6 }, hint: { color: colors.muted }, link: { color: colors.primaryDark, paddingVertical: 8 }, error: { color: colors.danger } });

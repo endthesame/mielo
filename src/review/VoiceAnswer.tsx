@@ -3,6 +3,7 @@ import { AppState, Pressable, StyleSheet, Text, View } from 'react-native';
 import { requestRecordingPermissionsAsync, setAudioModeAsync, useAudioStream } from 'expo-audio';
 import { speechEngine, type SpeechLanguage } from '../speech';
 import type { LiveSpeechSession } from '../speech/speech-engine';
+import { colors } from '../theme';
 import { normalizeAnswer } from './evaluate-answer';
 import { matchLiveAnswer } from './live-match';
 
@@ -139,4 +140,4 @@ export default function VoiceAnswer({ language, variants, onResult, onMatch }: P
     {message ? <Text style={styles.message}>{message}</Text> : null}
   </View>;
 }
-const styles = StyleSheet.create({ button: { backgroundColor: '#eee', padding: 14, borderRadius: 8, alignItems: 'center', marginBottom: 12 }, message: { color: '#555', marginBottom: 12 } });
+const styles = StyleSheet.create({ button: { backgroundColor: colors.softBlue, padding: 16, borderRadius: 14, alignItems: 'center', marginBottom: 12 }, message: { color: colors.muted, marginBottom: 12 } });

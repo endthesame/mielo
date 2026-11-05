@@ -4,6 +4,7 @@ import { File } from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
 import { Buffer } from 'buffer';
 import type { VocabularyRepository } from '../vocabulary';
+import { colors } from '../../theme';
 import { MAX_IMPORT_BYTES, parseImport, type ImportDelimiter, type ImportPreview } from './parse-import';
 
 type Props = {
@@ -89,7 +90,7 @@ export default function ImportWords({ deckId, existingWords, repository, onCompl
       accessibilityState={{ selected: delimiter === item.value }} onPress={() => { setDelimiter(item.value); setPreview(null); setMessage(''); }}>
       <Text style={[styles.choice, delimiter === item.value && styles.selected]}>{item.label}</Text>
     </Pressable>)}</View>
-    <TextInput style={styles.input} multiline textAlignVertical="top" placeholder="Вставьте текст здесь" value={text} editable={!busy}
+    <Text style={styles.label}>Текст для импорта</Text><TextInput style={styles.input} multiline textAlignVertical="top" placeholder="Вставьте текст здесь" value={text} editable={!busy}
       onChangeText={(value) => {
         setPreview(null); setCompleted(false);
         if (Buffer.byteLength(value, 'utf8') > MAX_IMPORT_BYTES) { setMessage('Текст больше 5 МиБ.'); return; }
@@ -116,12 +117,12 @@ export default function ImportWords({ deckId, existingWords, repository, onCompl
   </View>;
 }
 const styles = StyleSheet.create({
-  container: { padding: 24 }, title: { fontSize: 26, fontWeight: '700', marginVertical: 16 },
-  label: { fontSize: 16, fontWeight: '600', marginVertical: 10 }, hint: { color: '#555', marginVertical: 8 },
-  link: { color: '#315bb2', paddingVertical: 10 }, example: { marginVertical: 4, color: '#333' },
-  input: { borderWidth: 1, borderColor: '#aaa', borderRadius: 8, padding: 12, minHeight: 140, marginVertical: 12 },
-  delimiters: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 }, choice: { paddingVertical: 8, paddingHorizontal: 6, color: '#555' },
-  selected: { fontWeight: '700', color: '#111', textDecorationLine: 'underline' },
-  button: { backgroundColor: '#333', borderRadius: 8, padding: 14, alignItems: 'center', marginVertical: 12 },
-  buttonText: { color: '#fff', fontWeight: '600' }, message: { color: '#333', marginVertical: 10 }, error: { color: '#b00020', marginVertical: 4 },
+  container: { padding: 24 }, title: { color: colors.text, fontSize: 30, fontWeight: '800', marginVertical: 18 },
+  label: { color: colors.text, fontSize: 16, fontWeight: '700', marginVertical: 10 }, hint: { color: colors.muted, marginVertical: 8, lineHeight: 21 },
+  link: { color: colors.primaryDark, fontWeight: '700', paddingVertical: 14 }, example: { marginVertical: 4, color: colors.muted },
+  input: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 14, minHeight: 140, marginVertical: 12, fontSize: 16 },
+  delimiters: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, choice: { paddingVertical: 12, paddingHorizontal: 12, color: colors.muted, backgroundColor: colors.surface, borderRadius: 12 },
+  selected: { fontWeight: '700', color: colors.primaryDark, backgroundColor: colors.softBlue },
+  button: { backgroundColor: colors.primary, borderBottomWidth: 4, borderBottomColor: colors.primaryDark, borderRadius: 16, padding: 16, alignItems: 'center', marginVertical: 12 },
+  buttonText: { color: colors.surface, fontWeight: '700', fontSize: 16 }, message: { color: colors.muted, marginVertical: 10 }, error: { color: colors.danger, marginVertical: 4 },
 });

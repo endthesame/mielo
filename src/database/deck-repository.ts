@@ -7,6 +7,12 @@ import { decks } from './schema';
 import { deleteImageFiles } from '../media/media-store';
 
 export const deckRepository: DeckRepository = {
+  async countWords(id) {
+    const db = await getDatabase();
+    const row = await db.getFirstAsync<{ count: number }>(`SELECT count(*) AS count FROM vocabulary_items v
+      JOIN decks d ON d.id = v.deck_id WHERE d.id = ? AND d.deleted_at IS NULL AND v.deleted_at IS NULL`, id);
+    return row?.count ?? 0;
+  },
   async countDue(id, now) {
     const db = await getDatabase();
     const row = await db.getFirstAsync<{ count: number }>(`SELECT count(*) AS count FROM learning_cards c

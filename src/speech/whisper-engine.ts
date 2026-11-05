@@ -3,9 +3,17 @@ import { File, Paths } from 'expo-file-system';
 import { initWhisper } from 'whisper.rn/index';
 import type { SpeechEngine, SpeechLanguage } from './speech-engine';
 import { LiveTranscriber } from './live-transcriber';
+import { whisperTinyMultilingual } from './whisper-models';
 
 const MODEL_URL = 'https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-tiny.bin';
 const MODEL_SHA256 = 'be07e048e1e599ad46341c8d2a135645097a538221678b7acdd1b1919c6e1b21';
+
+function whisperLanguage(language: SpeechLanguage): string {
+  if (!whisperTinyMultilingual.supportedLanguages.includes(language)) {
+    throw new Error('Текущая модель не поддерживает этот язык.');
+  }
+  return language === 'jv' ? 'jw' : language;
+}
 
 async function isValidModel(file: File): Promise<boolean> {
   if (!file.exists || file.size !== 77691713) return false;
@@ -65,6 +73,7 @@ async function transcribeRecording(
   language: SpeechLanguage,
   onStatus: (message: string) => void,
 ): Promise<string> {
+  const modelLanguage = whisperLanguage(language);
   const model = await getModel(onStatus);
   onStatus('Загружаем модель в память…');
   let context;
@@ -76,7 +85,7 @@ async function transcribeRecording(
   }
   try {
     onStatus('Распознаём запись…');
-    const { result } = await context.transcribe(audioUri, { language, translate: false }).promise.catch((error) => {
+    const { result } = await context.transcribe(audioUri, { language: modelLanguage, translate: false }).promise.catch((error) => {
       console.error('Transcription failed:', error);
       throw new Error('Не удалось распознать запись. Попробуйте записать слово ещё раз.');
     });
@@ -87,13 +96,15 @@ async function transcribeRecording(
 }
 
 export const whisperEngine: SpeechEngine = {
+  getCapabilities: () => ({ supportedLanguages: whisperTinyMultilingual.supportedLanguages, liveTranscription: true }),
   transcribe: transcribeRecording,
   async startLive(language, onText, onError, onStatus) {
+    const modelLanguage = whisperLanguage(language);
     const model = await getModel(onStatus);
     onStatus('Загружаем модель в память…');
     const context = await initWhisper({ filePath: model.uri, useGpu: false });
     const transcriber = new LiveTranscriber(async (audio) => {
-      const { result } = await context.transcribeData(audio, { language, translate: false }).promise;
+      const { result } = await context.transcribeData(audio, { language: modelLanguage, translate: false }).promise;
       return result;
     }, onText, onError);
     let closing: Promise<void> | null = null;

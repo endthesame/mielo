@@ -6,6 +6,7 @@ import Examples from './Examples';
 import WordImage from '../media/WordImage';
 import ImportWords from './import/ImportWords';
 import { colors } from '../theme';
+import { languageName } from '../languages/languages';
 
 export default function VocabularyScreen({ deck, repository, onReview }: { deck: Deck; repository: VocabularyRepository; onReview: () => void }) {
   const [items, setItems] = useState<VocabularyItem[]>([]);
@@ -96,9 +97,9 @@ export default function VocabularyScreen({ deck, repository, onReview }: { deck:
 
   return (
     <View style={styles.container}>
-      <Text style={styles.eyebrow}>{deck.targetLanguage === 'ko' ? 'КОРЕЙСКИЙ' : 'ЯПОНСКИЙ'}</Text>
       <Text style={styles.title}>{deck.name}</Text>
-      <View style={styles.hero}><Text style={styles.heroLabel}>ВАШИ ПОВТОРЕНИЯ</Text><Text style={styles.heroTitle}>Пора освежить слова?</Text><Text style={styles.hint}>Продолжите учиться в своём темпе.</Text>
+      <Text style={styles.language}>{languageName(deck.targetLanguage)}</Text>
+      <View style={styles.hero}><View style={styles.accentMark} /><Text style={styles.heroTitle}>Пора освежить слова?</Text><Text style={styles.hint}>Продолжите учиться в своём темпе.</Text>
       <Pressable style={styles.button} onPress={onReview}><Text style={styles.buttonText}>Начать повторение</Text></Pressable></View>
       <Pressable style={styles.importButton} onPress={() => setImportOpen(true)} disabled={loading || saving} accessibilityRole="button"><Text style={styles.action}>Импортировать слова</Text></Pressable>
       {!formOpen && <Pressable style={styles.importButton} onPress={() => setFormOpen(true)}><Text style={styles.action}>＋ Добавить слово</Text></Pressable>}
@@ -136,10 +137,10 @@ export default function VocabularyScreen({ deck, repository, onReview }: { deck:
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24 }, eyebrow: { fontSize: 11, color: colors.primaryDark, letterSpacing: 1.2, fontWeight: '700' },
-  title: { fontSize: 32, color: colors.text, fontWeight: '800', marginTop: 8, marginBottom: 24 },
+  container: { padding: 24 },
+  title: { fontSize: 32, color: colors.text, fontWeight: '800', marginTop: 8 }, language: { color: colors.muted, fontSize: 15, marginTop: 6, marginBottom: 24 },
   hero: { backgroundColor: colors.softBlue, borderRadius: 20, padding: 20, marginBottom: 16 },
-  heroLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1, color: colors.primaryDark }, heroTitle: { color: colors.text, fontSize: 21, fontWeight: '700', marginTop: 10 },
+  accentMark: { width: 30, height: 4, borderRadius: 2, backgroundColor: colors.orange, marginBottom: 14 }, heroTitle: { color: colors.text, fontSize: 21, fontWeight: '700' },
   form: { backgroundColor: colors.surface, borderRadius: 20, padding: 20, marginBottom: 24 },
   label: { color: colors.text, fontSize: 20, fontWeight: '700', marginBottom: 12, marginTop: 12 }, fieldLabel: { color: colors.muted, fontSize: 14, fontWeight: '600', marginBottom: 6 },
   input: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 14, marginBottom: 14, fontSize: 16, color: colors.text },

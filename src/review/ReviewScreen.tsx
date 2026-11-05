@@ -8,6 +8,7 @@ import { matchesAnswer } from './evaluate-answer';
 import { matchLiveAnswer } from './live-match';
 import { imageUri } from '../media/media-store';
 import { getVoiceEnabled } from '../settings/settings-repository';
+import { speechEngine, supportsLiveLanguage } from '../speech';
 import { colors } from '../theme';
 import { initialReviewFlow, reviewFlowReducer, type RecallChoice } from './review-flow';
 
@@ -34,6 +35,7 @@ export default function ReviewScreen({ deck, repository, onClose }: { deck: Deck
   useEffect(() => { void load(); }, [load]);
   useEffect(() => { getVoiceEnabled().then(setVoiceEnabled).catch((err) => console.error('Failed to read voice settings:', err)); }, []);
   const card = queue[0];
+  const voiceSupported = supportsLiveLanguage(speechEngine.getCapabilities(), deck.targetLanguage);
   function selfAssess(choice: RecallChoice) {
     if (revealLocked.current) return;
     revealLocked.current = true;
@@ -63,10 +65,11 @@ export default function ReviewScreen({ deck, repository, onClose }: { deck: Deck
     <Text style={styles.title}>Повторение · {deck.name}</Text>
     {loading ? <Text>Загружаем…</Text> : !card ? <><View style={styles.card}><Text style={styles.cue}>На сегодня всё</Text><Text style={styles.hint}>Карточек к повторению сейчас нет.</Text></View><Pressable onPress={load}><Text style={styles.link}>Обновить</Text></Pressable></> : <>
       <Text style={styles.hint}>Осталось в этой сессии: {queue.length}</Text>
-      <View style={styles.card}><Text style={styles.cardLabel}>ВСПОМНИТЕ СЛОВО</Text>{card.imageName && <Image source={{ uri: imageUri(card.imageName) }} style={styles.image} resizeMode="contain" />}
+      <View style={styles.card}><View style={styles.accentMark} /><Text style={styles.cardLabel}>ВСПОМНИТЕ СЛОВО</Text>{card.imageName && <Image source={{ uri: imageUri(card.imageName) }} style={styles.image} resizeMode="contain" />}
       <Text style={styles.cue}>{card.translation}</Text></View>
       {!flow.revealed ? <>
-        {voiceEnabled && (deck.targetLanguage === 'ko' || deck.targetLanguage === 'ja') && <VoiceAnswer key={card.cardId}
+        {voiceEnabled && !voiceSupported && <Text style={styles.hint}>Текущая модель не поддерживает голосовой ответ на этом языке. Вы можете ответить текстом или отметить, вспомнили ли слово.</Text>}
+        {voiceEnabled && voiceSupported && <VoiceAnswer key={card.cardId}
           language={deck.targetLanguage} variants={[card.text, card.reading, ...(JSON.parse(card.acceptedAnswers) as string[])]}
           onResult={(text) => { if (!revealLocked.current) setAnswer(text); }} onMatch={(text, kind) => {
             if (revealLocked.current) return;
@@ -101,11 +104,11 @@ const styles = StyleSheet.create({
   container: { padding: 24 }, title: { color: colors.text, fontSize: 27, fontWeight: '800', marginVertical: 20 },
   link: { color: colors.primaryDark, paddingVertical: 12, fontWeight: '600' }, hint: { color: colors.muted, marginVertical: 12, lineHeight: 21 },
   card: { backgroundColor: colors.surface, borderRadius: 24, padding: 24, minHeight: 190, justifyContent: 'center', marginVertical: 12, borderBottomWidth: 4, borderBottomColor: colors.border },
-  cardLabel: { color: colors.primaryDark, fontSize: 11, letterSpacing: 1.2, fontWeight: '700' }, cue: { color: colors.text, fontSize: 30, fontWeight: '700', marginVertical: 24 }, answer: { color: colors.text, fontSize: 28, fontWeight: '700', marginTop: 12 },
+  accentMark: { width: 30, height: 4, borderRadius: 2, backgroundColor: colors.orange, marginBottom: 16 }, cardLabel: { color: colors.primaryDark, fontSize: 11, letterSpacing: 1.2, fontWeight: '700' }, cue: { color: colors.text, fontSize: 30, fontWeight: '700', marginVertical: 24 }, answer: { color: colors.text, fontSize: 28, fontWeight: '700', marginTop: 12 },
   input: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: 14, padding: 14, marginBottom: 16, fontSize: 16 },
   button: { backgroundColor: colors.primary, borderBottomColor: colors.primaryDark, borderBottomWidth: 4, padding: 16, borderRadius: 16, alignItems: 'center' },
   buttonText: { color: colors.surface, fontWeight: '700', fontSize: 16 }, ratings: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   selfActions: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 12 }, selfButton: { flexGrow: 1, padding: 16, backgroundColor: colors.softBlue, borderRadius: 14, alignItems: 'center' },
-  rating: { width: '48%', padding: 16, backgroundColor: colors.softBlue, borderRadius: 14, alignItems: 'center' }, ratingText: { color: colors.primaryDark, fontWeight: '700' },
+  rating: { flexBasis: '44%', flexGrow: 1, minHeight: 48, padding: 16, backgroundColor: colors.softBlue, borderRadius: 14, alignItems: 'center' }, ratingText: { color: colors.primaryDark, fontWeight: '700' },
   error: { color: colors.danger, marginTop: 16 }, image: { width: '100%', height: 160, marginVertical: 8 },
 });

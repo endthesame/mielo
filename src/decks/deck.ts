@@ -19,4 +19,5 @@ export interface DeckRepository {
   rename(id: string, name: string): Promise<Deck>;
   remove(id: string): Promise<void>;
   countDue(id: string, now: Date): Promise<number>;
+  countWords(id: string): Promise<number>;
 }

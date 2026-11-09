@@ -1,12 +1,14 @@
-import { CryptoDigestAlgorithm, digest } from 'expo-crypto';
 import { File, Paths } from 'expo-file-system';
 import { initWhisper } from 'whisper.rn/index';
 import type { SpeechEngine, SpeechLanguage } from './speech-engine';
 import { LiveTranscriber } from './live-transcriber';
 import { whisperTinyMultilingual } from './whisper-models';
+import { createModelIntegrity } from './model-integrity';
 
 const MODEL_URL = 'https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-tiny.bin';
 const MODEL_SHA256 = 'be07e048e1e599ad46341c8d2a135645097a538221678b7acdd1b1919c6e1b21';
+const MODEL_SIZE = 77691713;
+const integrity = createModelIntegrity(MODEL_SIZE, MODEL_SHA256);
 
 function whisperLanguage(language: SpeechLanguage): string {
   if (!whisperTinyMultilingual.supportedLanguages.includes(language)) {
@@ -15,19 +17,13 @@ function whisperLanguage(language: SpeechLanguage): string {
   return language === 'jv' ? 'jw' : language;
 }
 
-async function isValidModel(file: File): Promise<boolean> {
-  if (!file.exists || file.size !== 77691713) return false;
-  const hash = await digest(CryptoDigestAlgorithm.SHA256, await file.arrayBuffer());
-  const hex = Array.from(new Uint8Array(hash), (byte) => byte.toString(16).padStart(2, '0')).join('');
-  return hex === MODEL_SHA256;
-}
-
 async function getModel(onStatus: (message: string) => void): Promise<File> {
   const model = new File(Paths.document, 'ggml-tiny.bin');
   const temporary = new File(Paths.cache, 'ggml-tiny-download.bin');
 
   onStatus('Проверяем модель…');
-  if (await isValidModel(model)) return model;
+  if (await integrity.verify(model)) return model;
+  integrity.clear();
   if (model.exists) model.delete();
   if (temporary.exists) temporary.delete();
 
@@ -45,8 +41,10 @@ async function getModel(onStatus: (message: string) => void): Promise<File> {
       throw new Error('Не удалось скачать модель. Проверьте доступ к интернету в симуляторе и повторите попытку.');
     }
     onStatus('Проверяем целостность модели…');
-    if (!(await isValidModel(temporary))) throw new Error('Модель скачана с ошибкой. Попробуйте ещё раз.');
+    if (!(await integrity.verify(temporary))) throw new Error('Модель скачана с ошибкой. Попробуйте ещё раз.');
+    const verifiedTemporary = integrity.fingerprint(temporary);
     temporary.move(model);
+    integrity.moved(verifiedTemporary, model);
     moved = true;
     return model;
   } finally {
@@ -60,10 +58,11 @@ export async function prepareWhisperModel(onStatus: (message: string) => void): 
 
 export function isWhisperModelDownloaded(): boolean {
   const model = new File(Paths.document, 'ggml-tiny.bin');
-  return model.exists && model.size === 77691713;
+  return model.exists && model.size === MODEL_SIZE;
 }
 
 export function deleteWhisperModel(): void {
+  integrity.clear();
   const model = new File(Paths.document, 'ggml-tiny.bin');
   if (model.exists) model.delete();
 }

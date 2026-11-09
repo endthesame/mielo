@@ -39,11 +39,11 @@ export default function Examples({ wordId }: { wordId: string }) {
     <Text style={styles.heading}>Примеры</Text>
     {examples.map((example) => <View key={example.id} style={styles.example}>
       <Text>{example.text}</Text>{example.translation && <Text style={styles.hint}>{example.translation}</Text>}
-      <Pressable onPress={() => remove(example)} disabled={busy}><Text style={styles.link}>Удалить пример</Text></Pressable>
+      <Pressable style={({ pressed }) => ({ opacity: busy ? 0.45 : pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={() => remove(example)} disabled={busy}><Text style={styles.link}>Удалить пример</Text></Pressable>
     </View>)}
     <TextInput style={styles.input} placeholder="Пример употребления" value={text} onChangeText={setText} editable={!busy} />
     <TextInput style={styles.input} placeholder="Перевод примера (необязательно)" value={translation} onChangeText={setTranslation} editable={!busy} />
-    <Pressable onPress={add} disabled={busy}><Text style={styles.link}>Добавить пример</Text></Pressable>
+    <Pressable style={({ pressed }) => ({ opacity: busy ? 0.45 : pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={add} disabled={busy}><Text style={styles.link}>Добавить пример</Text></Pressable>
     {error ? <Text style={styles.error}>{error}</Text> : null}
   </View>;
 }

@@ -34,9 +34,9 @@ export default function SwipeCard({ cue, image, revealed, answer, reading, note,
       </Pressable>
     </Animated.View></GestureDetector>
     {!revealed && <View style={styles.actions}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Вспомнил" onPress={() => onRecall('remembered')} style={styles.action}><Host matchContents pointerEvents="none"><Icon name="checkmark" size={20} color={colors.primaryDark} /></Host></Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel="Вспомнил" onPress={() => onRecall('remembered')} style={({ pressed }) => [styles.action, pressed && styles.pressed]}><Host matchContents pointerEvents="none"><Icon name="checkmark" size={20} color={colors.primaryDark} /></Host></Pressable>
       <Text style={styles.actionText}>← Вспомнил   ·   Не вспомнил →</Text>
-      <Pressable accessibilityRole="button" accessibilityLabel="Не вспомнил" onPress={() => onRecall('not-remembered')} style={[styles.action, { backgroundColor: colors.peach }]}><Host matchContents pointerEvents="none"><Icon name="xmark" size={20} color="#88310D" /></Host></Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel="Не вспомнил" onPress={() => onRecall('not-remembered')} style={({ pressed }) => [styles.action, { backgroundColor: colors.peach }, pressed && styles.pressed]}><Host matchContents pointerEvents="none"><Icon name="xmark" size={20} color="#88310D" /></Host></Pressable>
     </View>}
   </View>;
 }
@@ -47,4 +47,5 @@ const styles = StyleSheet.create({
   answer: { color: colors.primaryDark, fontSize: 27, fontWeight: '700' }, detail: { color: colors.muted, fontSize: 16, lineHeight: 22, marginTop: 8 },
   overlay: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, zIndex: 1, justifyContent: 'flex-start', alignItems: 'flex-end', padding: 22 }, known: { backgroundColor: '#E0E7FF' }, unknown: { backgroundColor: '#FFEDD5' }, knownText: { color: colors.primaryDark, fontWeight: '800' }, unknownText: { color: '#88310D', fontWeight: '800' },
   actions: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 }, action: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.softBlue, justifyContent: 'center', alignItems: 'center' }, actionText: { color: colors.muted, fontSize: 13, flexShrink: 1, textAlign: 'center' },
+  pressed: { opacity: 0.7 },
 });

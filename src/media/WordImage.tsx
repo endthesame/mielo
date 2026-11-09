@@ -32,8 +32,8 @@ export default function WordImage({ wordId }: { wordId: string }) {
   }
   return <View style={styles.container}>
     {uri && <Image source={{ uri }} style={styles.image} resizeMode="contain" />}
-    <Pressable disabled={busy} onPress={choose}><Text style={styles.link}>{uri ? 'Заменить изображение' : 'Добавить изображение'}</Text></Pressable>
-    {uri && <Pressable disabled={busy} onPress={confirmRemove}><Text style={styles.link}>Удалить изображение</Text></Pressable>}
+    <Pressable style={({ pressed }) => ({ opacity: busy ? 0.45 : pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" disabled={busy} onPress={choose}><Text style={styles.link}>{uri ? 'Заменить изображение' : 'Добавить изображение'}</Text></Pressable>
+    {uri && <Pressable style={({ pressed }) => ({ opacity: busy ? 0.45 : pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" disabled={busy} onPress={confirmRemove}><Text style={styles.link}>Удалить изображение</Text></Pressable>}
     {error ? <Text style={styles.error}>{error}</Text> : null}
   </View>;
 }

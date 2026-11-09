@@ -9,7 +9,8 @@ import { matchLiveAnswer } from './live-match';
 import { imageUri } from '../media/media-store';
 import { getVoiceEnabled } from '../settings/settings-repository';
 import { speechEngine, supportsLiveLanguage } from '../speech';
-import { colors } from '../theme';
+import { colors, spacing, radius, fontSize } from '../theme';
+import Button from '../components/Button';
 import { initialReviewFlow, reviewFlowReducer, type RecallChoice } from './review-flow';
 import SwipeCard from './SwipeCard';
 
@@ -61,9 +62,9 @@ export default function ReviewScreen({ deck, repository, onClose }: { deck: Deck
     finally { busy.current = false; setSaving(false); }
   }
   return <View style={styles.container}>
-    <Pressable onPress={onClose} disabled={saving}><Text style={styles.link}>← Вернуться к колоде</Text></Pressable>
+    <Button title="← Вернуться к колоде" variant="text" onPress={onClose} disabled={saving} style={styles.textButton} />
     <Text style={styles.title}>Повторение · {deck.name}</Text>
-    {loading ? <Text>Загружаем…</Text> : !card && error ? null : !card ? <><View style={styles.card}><Text style={styles.cue}>На сегодня всё</Text><Text style={styles.hint}>Карточек к повторению сейчас нет.</Text></View><Pressable onPress={load}><Text style={styles.link}>Обновить</Text></Pressable></> : <>
+    {loading ? <Text>Загружаем…</Text> : !card && error ? null : !card ? <><View style={styles.card}><Text style={styles.cue}>На сегодня всё</Text><Text style={styles.hint}>Карточек к повторению сейчас нет.</Text></View><Pressable style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={load}><Text style={styles.link}>Обновить</Text></Pressable></> : <>
       <Text style={styles.hint}>Осталось в этой сессии: {queue.length}</Text>
       <SwipeCard key={card.cardId} cue={card.translation} image={card.imageName ? imageUri(card.imageName) : undefined} revealed={flow.revealed} answer={card.text} reading={card.reading} note={card.meaningNote} example={card.example} onReveal={showAnswer} onRecall={selfAssess} />
       {!flow.revealed ? <>
@@ -77,7 +78,7 @@ export default function ReviewScreen({ deck, repository, onClose }: { deck: Deck
             dispatch({ type: 'speech-match', kind });
           }} />}</View>
         {voiceEnabled && !voiceSupported && <Text style={styles.hint}>Текущая модель не поддерживает голосовой ответ на этом языке. Вы можете ответить текстом или отметить, вспомнили ли слово.</Text>}
-        {answer.trim() !== '' && <Pressable onPress={showAnswer} accessibilityRole="button"><Text style={styles.link}>Проверить ответ</Text></Pressable>}
+        {answer.trim() !== '' && <Pressable style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={showAnswer}><Text style={styles.link}>Проверить ответ</Text></Pressable>}
       </> : <>
         {flow.recall && <Text style={styles.hint}>{flow.recall === 'remembered' ? 'Вы отметили, что вспомнили слово.' : 'Вы отметили, что не вспомнили слово.'}</Text>}
         {flow.automaticMatch && <Text style={styles.hint}>{flow.automaticMatch === 'exact' ? 'Ответ совпал.' : 'Похоже, ответ верный. Проверьте распознавание.'}</Text>}
@@ -86,20 +87,21 @@ export default function ReviewScreen({ deck, repository, onClose }: { deck: Deck
         {answer.trim() !== '' && <Text style={styles.hint}>{matchesAnswer(answer, card.text, card.reading, JSON.parse(card.acceptedAnswers) as string[]) ? 'Совпадает с одним из допустимых ответов.' : matchLiveAnswer(answer, [card.text, card.reading, ...(JSON.parse(card.acceptedAnswers) as string[])]) === 'fuzzy' ? 'Ответ похож на допустимый — проверьте его.' : 'Автоматического совпадения нет — проверьте ответ самостоятельно.'}</Text>}
         <Text style={styles.hint}>Как хорошо вы вспомнили слово?</Text>
         <Text style={styles.hint}>Снова — не вспомнил · Трудно — с усилием{ '\n' }Хорошо — уверенно · Легко — без усилий</Text>
-        <Pressable onPress={resetAnswer} disabled={saving}><Text style={styles.link}>Повторить ответ</Text></Pressable>
-        <View style={styles.ratings}>{ratings.map((rating) => <Pressable key={rating.value} style={styles.rating} disabled={saving} onPress={() => submit(rating.value)}><Text style={styles.ratingText}>{rating.title}</Text></Pressable>)}</View>
+        <Button title="Повторить ответ" variant="text" onPress={resetAnswer} disabled={saving} style={styles.textButton} />
+        <View style={styles.ratings}>{ratings.map((rating) => <Pressable key={rating.value} accessibilityRole="button" accessibilityState={{ disabled: saving, busy: saving }} style={({ pressed }) => [styles.rating, saving && styles.disabled, pressed && styles.pressed]} disabled={saving} onPress={() => submit(rating.value)}><Text style={styles.ratingText}>{rating.title}</Text></Pressable>)}</View>
       </>}
     </>}
-    {error && <><Text style={styles.error}>{error}</Text><Pressable onPress={load}><Text style={styles.link}>Обновить очередь</Text></Pressable></>}
+    {error && <><Text style={styles.error}>{error}</Text><Pressable style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={load}><Text style={styles.link}>Обновить очередь</Text></Pressable></>}
   </View>;
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24 }, title: { color: colors.text, fontSize: 27, fontWeight: '800', marginVertical: 20 },
+  container: { padding: spacing.screen }, title: { color: colors.text, fontSize: 27, fontWeight: '800', marginVertical: spacing.lg },
+  textButton: { alignSelf: 'flex-start', paddingHorizontal: 0 }, disabled: { opacity: 0.45 }, pressed: { opacity: 0.7 },
   link: { color: colors.primaryDark, paddingVertical: 12, fontWeight: '600' }, hint: { color: colors.muted, marginVertical: 12, lineHeight: 21 },
   card: { backgroundColor: colors.surface, borderRadius: 24, padding: 24, minHeight: 190, justifyContent: 'center', marginVertical: 12, borderBottomWidth: 4, borderBottomColor: colors.border },
   accentMark: { width: 30, height: 4, borderRadius: 2, backgroundColor: colors.orange, marginBottom: 16 }, cardLabel: { color: colors.primaryDark, fontSize: 11, letterSpacing: 1.2, fontWeight: '700' }, cue: { color: colors.text, fontSize: 30, fontWeight: '700', marginVertical: 24 }, answer: { color: colors.text, fontSize: 28, fontWeight: '700', marginTop: 12 },
-  input: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: 14, padding: 14, marginBottom: 16, fontSize: 16 },
+  input: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: radius.input, padding: 14, marginBottom: spacing.md, fontSize: fontSize.body },
   entry: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginTop: 16, flexWrap: 'wrap' }, entryInput: { flexGrow: 1, flexBasis: '65%' },
   button: { backgroundColor: colors.primary, borderBottomColor: colors.primaryDark, borderBottomWidth: 4, padding: 16, borderRadius: 16, alignItems: 'center' },
   buttonText: { color: colors.surface, fontWeight: '700', fontSize: 16 }, ratings: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },

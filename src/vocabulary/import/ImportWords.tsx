@@ -4,7 +4,8 @@ import { File } from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
 import { Buffer } from 'buffer';
 import type { VocabularyRepository } from '../vocabulary';
-import { colors } from '../../theme';
+import { colors, spacing, radius, fontSize } from '../../theme';
+import Button from '../../components/Button';
 import { MAX_IMPORT_BYTES, parseImport, type ImportDelimiter, type ImportPreview } from './parse-import';
 
 type Props = {
@@ -80,13 +81,13 @@ export default function ImportWords({ deckId, existingWords, repository, onCompl
   }
 
   return <View style={styles.container}>
-    <Pressable onPress={onClose} disabled={busy} accessibilityRole="button"><Text style={styles.link}>← Вернуться к колоде</Text></Pressable>
+    <Pressable style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={onClose} disabled={busy}><Text style={styles.link}>← Вернуться к колоде</Text></Pressable>
     <Text style={styles.title}>Массовое добавление</Text>
     <Text style={styles.hint}>Формат без заголовка: слово; перевод; чтение; комментарий. Первые два поля обязательны. Не более 5000 записей и 5 МиБ, UTF-8.</Text>
     <Text style={styles.example}>食べる;есть;たべる;о приёме пищи{'\n'}猫;кошка;ねこ;</Text>
-    <Pressable onPress={chooseFile} disabled={busy} accessibilityRole="button"><Text style={styles.link}>Выбрать CSV, TXT или TSV</Text></Pressable>
+    <Pressable style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={chooseFile} disabled={busy}><Text style={styles.link}>Выбрать CSV, TXT или TSV</Text></Pressable>
     <Text style={styles.label}>Разделитель</Text>
-    <View style={styles.delimiters}>{delimiters.map((item) => <Pressable key={item.value} disabled={busy} accessibilityRole="button"
+    <View style={styles.delimiters}>{delimiters.map((item) => <Pressable style={({ pressed }) => ({ opacity: busy ? 0.45 : pressed ? 0.7 : 1 })} key={item.value} disabled={busy} accessibilityRole="button"
       accessibilityState={{ selected: delimiter === item.value }} onPress={() => { setDelimiter(item.value); setPreview(null); setMessage(''); }}>
       <Text style={[styles.choice, delimiter === item.value && styles.selected]}>{item.label}</Text>
     </Pressable>)}</View>
@@ -96,7 +97,7 @@ export default function ImportWords({ deckId, existingWords, repository, onCompl
         if (Buffer.byteLength(value, 'utf8') > MAX_IMPORT_BYTES) { setMessage('Текст больше 5 МиБ.'); return; }
         setText(value); setMessage('');
       }} />
-    <Pressable style={styles.button} onPress={check} disabled={busy || completed} accessibilityRole="button"><Text style={styles.buttonText}>Проверить</Text></Pressable>
+    <Button title="Проверить" onPress={check} disabled={busy || completed} style={styles.buttonSpacing} />
     {message ? <Text style={styles.message} accessibilityLiveRegion="polite">{message}</Text> : null}
     {preview && <View>
       <Text style={styles.label}>Проверено записей: {preview.totalRows}</Text>
@@ -109,20 +110,16 @@ export default function ImportWords({ deckId, existingWords, repository, onCompl
       {preview.rows.slice(0, 5).map((row) => <Text key={row.line} style={styles.example}>Строка {row.line}: {row.text} — {row.translation}{row.reading ? ` (${row.reading})` : ''}</Text>)}
       {preview.rows.length > 5 && <Text style={styles.hint}>Показаны первые 5 из {preview.rows.length} записей.</Text>}
       {preview.errors.length > 0 && <Text style={styles.error}>Исправьте все ошибки и проверьте текст ещё раз.</Text>}
-      <Pressable style={styles.button} onPress={apply} disabled={busy || preview.errors.length > 0 || preview.rows.length === 0} accessibilityRole="button"
-        accessibilityState={{ disabled: busy || preview.errors.length > 0 || preview.rows.length === 0 }}>
-        <Text style={styles.buttonText}>{busy ? 'Добавляем…' : 'Добавить в колоду'}</Text>
-      </Pressable>
+      <Button title={busy ? 'Добавляем…' : 'Добавить в колоду'} onPress={apply} busy={busy} disabled={preview.errors.length > 0 || preview.rows.length === 0} style={styles.buttonSpacing} />
     </View>}
   </View>;
 }
 const styles = StyleSheet.create({
-  container: { padding: 24 }, title: { color: colors.text, fontSize: 30, fontWeight: '800', marginVertical: 18 },
+  container: { padding: spacing.screen }, title: { color: colors.text, fontSize: 30, fontWeight: '800', marginVertical: 18 },
   label: { color: colors.text, fontSize: 16, fontWeight: '700', marginVertical: 10 }, hint: { color: colors.muted, marginVertical: 8, lineHeight: 21 },
   link: { color: colors.primaryDark, fontWeight: '700', paddingVertical: 14 }, example: { marginVertical: 4, color: colors.muted },
-  input: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 14, minHeight: 140, marginVertical: 12, fontSize: 16 },
+  input: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.button, padding: 14, minHeight: 140, marginVertical: 12, fontSize: fontSize.body },
   delimiters: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, choice: { paddingVertical: 12, paddingHorizontal: 12, color: colors.muted, backgroundColor: colors.surface, borderRadius: 12 },
   selected: { fontWeight: '700', color: colors.primaryDark, backgroundColor: colors.softBlue },
-  button: { backgroundColor: colors.primary, borderBottomWidth: 4, borderBottomColor: colors.primaryDark, borderRadius: 16, padding: 16, alignItems: 'center', marginVertical: 12 },
-  buttonText: { color: colors.surface, fontWeight: '700', fontSize: 16 }, message: { color: colors.muted, marginVertical: 10 }, error: { color: colors.danger, marginVertical: 4 },
+  buttonSpacing: { marginVertical: spacing.sm }, message: { color: colors.muted, marginVertical: 10 }, error: { color: colors.danger, marginVertical: 4 },
 });

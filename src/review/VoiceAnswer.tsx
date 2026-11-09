@@ -134,10 +134,10 @@ export default function VoiceAnswer({ language, variants, onResult, onMatch }: P
     <Pressable disabled={phase === 'stopping'} onPress={() => {
       if (phase === 'idle') void start();
       else { setMessage('Прослушивание остановлено.'); stop(); }
-    }} style={[styles.button, phase !== 'idle' && styles.active]} accessibilityRole="button" accessibilityLabel={phase === 'idle' ? 'Включить голосовой ввод' : 'Остановить голосовой ввод'} accessibilityState={{ disabled: phase === 'stopping', selected: phase === 'listening' }}>
+    }} style={({ pressed }) => [styles.button, phase !== 'idle' && styles.active, phase === 'stopping' && styles.disabled, pressed && styles.pressed]} accessibilityRole="button" accessibilityLabel={phase === 'idle' ? 'Включить голосовой ввод' : 'Остановить голосовой ввод'} accessibilityState={{ disabled: phase === 'stopping', selected: phase === 'listening' }}>
       <Host matchContents pointerEvents="none"><Icon name={phase === 'idle' ? 'mic' : 'mic.fill'} size={22} color={colors.primaryDark} /></Host>
     </Pressable>
     {message ? <Text style={styles.message} accessibilityLiveRegion="polite">{message}</Text> : null}
   </View>;
 }
-const styles = StyleSheet.create({ button: { backgroundColor: colors.softBlue, width: 52, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center' }, active: { backgroundColor: colors.peach, borderWidth: 2, borderColor: colors.orange }, message: { color: colors.muted, marginTop: 8, maxWidth: 200 } });
+const styles = StyleSheet.create({ button: { backgroundColor: colors.softBlue, width: 52, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center' }, active: { backgroundColor: colors.peach, borderWidth: 2, borderColor: colors.orange }, disabled: { opacity: 0.45 }, pressed: { opacity: 0.7 }, message: { color: colors.muted, marginTop: 8, maxWidth: 200 } });

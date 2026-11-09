@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { Deck, DeckRepository } from './deck';
-import { colors } from '../theme';
+import { colors, spacing, radius, fontSize } from '../theme';
+import Button from '../components/Button';
 import { Host, Icon, Picker } from '@expo/ui';
 import { languageName, languages, normalizeLanguageCode } from '../languages/languages';
 
@@ -91,7 +92,7 @@ export default function DecksScreen({ repository, onOpenDeck }: { repository: De
     <View style={styles.container}>
       <Text style={styles.title}>Мои колоды</Text>
       <Text style={styles.intro}>Слова, к которым хочется возвращаться.</Text>
-      {!formOpen && <Pressable style={styles.button} onPress={() => setFormOpen(true)} accessibilityRole="button"><Text style={styles.buttonText}>＋  Создать колоду</Text></Pressable>}
+      {!formOpen && <Button title="＋  Создать колоду" onPress={() => setFormOpen(true)} style={styles.createButton} />}
       {formOpen && <View style={styles.form}><Text style={styles.label}>{editingId ? 'Переименовать колоду' : 'Новая колода'}</Text>
       <TextInput style={styles.input} placeholder="Название колоды" value={name} onChangeText={setName} editable={!saving} />
       {!editingId && <><Text style={styles.label}>Язык изучения</Text>
@@ -101,10 +102,8 @@ export default function DecksScreen({ repository, onOpenDeck }: { repository: De
       </Picker></Host></View>
       {language === 'other' && <><Text style={styles.label}>Код языка</Text><Text style={styles.hint}>Введите двухбуквенный код ISO 639-1, а если его нет — трёхбуквенный код ISO 639-3.</Text><TextInput style={styles.input} value={customLanguage} onChangeText={setCustomLanguage} autoCapitalize="none" autoCorrect={false} placeholder="Например, sco" maxLength={3} editable={!saving} /></>}
       <Text style={styles.hint}>Язык перевода: русский</Text></>}
-      <Pressable style={styles.button} onPress={createDeck} disabled={saving || loading} accessibilityRole="button">
-        <Text style={styles.buttonText}>{saving ? 'Сохраняем…' : editingId ? 'Сохранить название' : 'Создать колоду'}</Text>
-      </Pressable>
-      <Pressable onPress={() => { setEditingId(null); setName(''); setError(null); setFormOpen(false); }} disabled={saving}><Text style={styles.link}>Отменить</Text></Pressable></View>}
+      <Button title={saving ? 'Сохраняем…' : editingId ? 'Сохранить название' : 'Создать колоду'} onPress={createDeck} disabled={loading} busy={saving} style={styles.createButton} />
+      <Pressable style={({ pressed }) => ({ opacity: saving ? 0.45 : pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={() => { setEditingId(null); setName(''); setError(null); setFormOpen(false); }} disabled={saving}><Text style={styles.link}>Отменить</Text></Pressable></View>}
       {error && <Text style={styles.error}>{error}</Text>}
       {loading ? <Text style={styles.hint}>Загружаем колоды…</Text> : decks.length === 0 ? (
         <View style={styles.empty}><View style={styles.emptyMark}><Host matchContents pointerEvents="none"><Icon name="rectangle.stack" color={colors.primaryDark} size={27} /></Host></View><Text style={styles.emptyTitle}>Здесь появятся ваши колоды</Text><Text style={styles.hint}>Создайте первую и добавьте слова для изучения.</Text></View>
@@ -129,16 +128,15 @@ export default function DecksScreen({ repository, onOpenDeck }: { repository: De
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24 },
+  container: { padding: spacing.screen },
   title: { color: colors.text, fontSize: 34, fontWeight: '800', marginTop: 8 }, intro: { color: colors.muted, fontSize: 16, marginTop: 8, marginBottom: 24 },
   form: { backgroundColor: colors.surface, padding: 20, borderRadius: 20, marginBottom: 20 },
   label: { color: colors.text, fontSize: 16, fontWeight: '600', marginBottom: 8 },
-  input: { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 14, marginBottom: 20, fontSize: 16, color: colors.text },
+  input: { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border, borderRadius: radius.input, padding: 14, marginBottom: 20, fontSize: fontSize.body, color: colors.text },
   picker: { backgroundColor: colors.background, borderRadius: 14, padding: 8 },
   hint: { color: colors.muted, marginVertical: 8, fontSize: 14 },
-  button: { backgroundColor: colors.primary, borderBottomColor: colors.primaryDark, borderBottomWidth: 4, borderRadius: 16, padding: 16, alignItems: 'center', marginBottom: 20 },
-  buttonText: { color: colors.surface, fontWeight: '700', fontSize: 16 }, error: { color: colors.danger, marginVertical: 8 },
-  deckCard: { backgroundColor: colors.surface, borderRadius: 20, padding: 20, marginBottom: 12, borderBottomWidth: 3, borderBottomColor: colors.border },
+  createButton: { marginBottom: spacing.lg }, error: { color: colors.danger, marginVertical: 8 },
+  deckCard: { backgroundColor: colors.surface, borderRadius: radius.card, padding: spacing.lg, marginBottom: 12, borderBottomWidth: 3, borderBottomColor: colors.border },
   deckHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 96 }, deckMark: { backgroundColor: colors.softBlue, width: 36, height: 36, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   deckLanguage: { color: colors.muted, fontSize: 11, fontWeight: '700', letterSpacing: 1, flexShrink: 1 }, deck: { color: colors.text, fontSize: 21, fontWeight: '700', marginTop: 14 },
   stats: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 20, rowGap: 8, marginTop: 10 },

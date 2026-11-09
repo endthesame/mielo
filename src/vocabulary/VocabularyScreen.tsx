@@ -5,7 +5,8 @@ import type { VocabularyItem, VocabularyRepository } from './vocabulary';
 import Examples from './Examples';
 import WordImage from '../media/WordImage';
 import ImportWords from './import/ImportWords';
-import { colors } from '../theme';
+import { colors, spacing, radius, fontSize } from '../theme';
+import Button from '../components/Button';
 import { languageName } from '../languages/languages';
 
 export default function VocabularyScreen({ deck, repository, onReview }: { deck: Deck; repository: VocabularyRepository; onReview: () => void }) {
@@ -100,19 +101,17 @@ export default function VocabularyScreen({ deck, repository, onReview }: { deck:
       <Text style={styles.title}>{deck.name}</Text>
       <Text style={styles.language}>{languageName(deck.targetLanguage)}</Text>
       <View style={styles.hero}><View style={styles.accentMark} /><Text style={styles.heroTitle}>Пора освежить слова?</Text><Text style={styles.hint}>Продолжите учиться в своём темпе.</Text>
-      <Pressable style={styles.button} onPress={onReview}><Text style={styles.buttonText}>Начать повторение</Text></Pressable></View>
-      <Pressable style={styles.importButton} onPress={() => setImportOpen(true)} disabled={loading || saving} accessibilityRole="button"><Text style={styles.action}>Импортировать слова</Text></Pressable>
-      {!formOpen && <Pressable style={styles.importButton} onPress={() => setFormOpen(true)}><Text style={styles.action}>＋ Добавить слово</Text></Pressable>}
+      <Button title="Начать повторение" onPress={onReview} style={styles.mainButton} /></View>
+      <Button title="Импортировать слова" variant="secondary" onPress={() => setImportOpen(true)} disabled={loading || saving} style={styles.secondaryButton} />
+      {!formOpen && <Button title="＋ Добавить слово" variant="secondary" onPress={() => setFormOpen(true)} style={styles.secondaryButton} />}
       {formOpen && <View style={styles.form}><Text style={styles.label}>{editingId ? 'Редактировать слово' : 'Добавить слово'}</Text>
       <Text style={styles.fieldLabel}>Слово *</Text><TextInput style={styles.input} placeholder="Слово или выражение *" value={text} onChangeText={setText} editable={!saving} />
       <Text style={styles.fieldLabel}>Перевод *</Text><TextInput style={styles.input} placeholder="Перевод *" value={translation} onChangeText={setTranslation} editable={!saving} />
       <Text style={styles.fieldLabel}>Чтение</Text><TextInput style={styles.input} placeholder="Чтение (необязательно)" value={reading} onChangeText={setReading} editable={!saving} />
       <Text style={styles.fieldLabel}>Комментарий</Text><TextInput style={styles.input} placeholder="Комментарий (необязательно)" value={note} onChangeText={setNote} editable={!saving} />
       <Text style={styles.fieldLabel}>Другие допустимые ответы</Text><TextInput style={styles.input} placeholder="Другие допустимые ответы — по одному на строку" value={alternatives} onChangeText={setAlternatives} editable={!saving} multiline />
-      <Pressable style={styles.button} onPress={createWord} disabled={saving || loading} accessibilityRole="button">
-        <Text style={styles.buttonText}>{saving ? 'Сохраняем…' : editingId ? 'Сохранить изменения' : 'Добавить слово'}</Text>
-      </Pressable>
-      <Pressable onPress={() => { setEditingId(null); setText(''); setTranslation(''); setReading(''); setNote(''); setAlternatives(''); setError(null); setFormOpen(false); }} disabled={saving}><Text style={styles.action}>Отменить</Text></Pressable></View>}
+      <Button title={saving ? 'Сохраняем…' : editingId ? 'Сохранить изменения' : 'Добавить слово'} onPress={createWord} disabled={loading} busy={saving} style={styles.mainButton} />
+      <Pressable style={({ pressed }) => ({ opacity: saving ? 0.45 : pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={() => { setEditingId(null); setText(''); setTranslation(''); setReading(''); setNote(''); setAlternatives(''); setError(null); setFormOpen(false); }} disabled={saving}><Text style={styles.action}>Отменить</Text></Pressable></View>}
       {error && <Text style={styles.error}>{error}</Text>}
       <Text style={styles.label}>Слова</Text>
       <TextInput style={styles.input} placeholder="Поиск по словам" value={query} onChangeText={(value) => { setQuery(value); setVisibleCount(50); }} />
@@ -122,14 +121,14 @@ export default function VocabularyScreen({ deck, repository, onReview }: { deck:
           {item.reading && <Text style={styles.hint}>{item.reading}</Text>}
           {item.meaningNote && <Text style={styles.hint}>{item.meaningNote}</Text>}
           <View style={styles.actions}>
-            <Pressable onPress={() => edit(item)} disabled={saving}><Text style={styles.action}>Изменить</Text></Pressable>
-            <Pressable onPress={() => confirmRemove(item)} disabled={saving}><Text style={styles.action}>Удалить</Text></Pressable>
-            <Pressable onPress={() => setExamplesFor(examplesFor === item.id ? null : item.id)}><Text style={styles.action}>Материалы</Text></Pressable>
+            <Pressable style={({ pressed }) => ({ opacity: saving ? 0.45 : pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={() => edit(item)} disabled={saving}><Text style={styles.action}>Изменить</Text></Pressable>
+            <Pressable style={({ pressed }) => ({ opacity: saving ? 0.45 : pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={() => confirmRemove(item)} disabled={saving}><Text style={styles.action}>Удалить</Text></Pressable>
+            <Pressable style={({ pressed }) => ({ opacity: saving ? 0.45 : pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={() => setExamplesFor(examplesFor === item.id ? null : item.id)}><Text style={styles.action}>Материалы</Text></Pressable>
           </View>
           {examplesFor === item.id && <><WordImage wordId={item.id} /><Examples wordId={item.id} /></>}
         </View>
       ))}
-      {!loading && visibleItems.length > visibleCount && <Pressable onPress={() => setVisibleCount((count) => count + 50)} accessibilityRole="button">
+      {!loading && visibleItems.length > visibleCount && <Pressable style={({ pressed }) => ({ opacity: saving ? 0.45 : pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={() => setVisibleCount((count) => count + 50)}>
         <Text style={styles.action}>Показать ещё · показано {visibleCount} из {visibleItems.length}</Text>
       </Pressable>}
     </View>
@@ -137,16 +136,16 @@ export default function VocabularyScreen({ deck, repository, onReview }: { deck:
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24 },
+  container: { padding: spacing.screen },
   title: { fontSize: 32, color: colors.text, fontWeight: '800', marginTop: 8 }, language: { color: colors.muted, fontSize: 15, marginTop: 6, marginBottom: 24 },
-  hero: { backgroundColor: colors.softBlue, borderRadius: 20, padding: 20, marginBottom: 16 },
+  hero: { backgroundColor: colors.softBlue, borderRadius: radius.card, padding: spacing.lg, marginBottom: 16 },
   accentMark: { width: 30, height: 4, borderRadius: 2, backgroundColor: colors.orange, marginBottom: 14 }, heroTitle: { color: colors.text, fontSize: 21, fontWeight: '700' },
-  form: { backgroundColor: colors.surface, borderRadius: 20, padding: 20, marginBottom: 24 },
+  form: { backgroundColor: colors.surface, borderRadius: radius.card, padding: spacing.lg, marginBottom: 24 },
   label: { color: colors.text, fontSize: 20, fontWeight: '700', marginBottom: 12, marginTop: 12 }, fieldLabel: { color: colors.muted, fontSize: 14, fontWeight: '600', marginBottom: 6 },
-  input: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 14, marginBottom: 14, fontSize: 16, color: colors.text },
-  button: { backgroundColor: colors.primary, borderBottomColor: colors.primaryDark, borderBottomWidth: 4, borderRadius: 16, padding: 16, alignItems: 'center', marginTop: 12 },
-  buttonText: { color: colors.surface, fontWeight: '700', fontSize: 16 }, error: { color: colors.danger, marginBottom: 12 },
-  importButton: { padding: 14, backgroundColor: colors.surface, borderRadius: 16, alignItems: 'center', marginBottom: 10 },
+  input: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.input, padding: 14, marginBottom: 14, fontSize: fontSize.body, color: colors.text },
+  mainButton: { marginTop: spacing.sm },
+  error: { color: colors.danger, marginBottom: 12 },
+  secondaryButton: { marginBottom: 10 },
   hint: { color: colors.muted, marginVertical: 6, lineHeight: 20 }, word: { padding: 18, borderRadius: 18, backgroundColor: colors.surface, marginBottom: 10 },
   wordText: { fontSize: 17, color: colors.text, fontWeight: '600' }, actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 20, marginTop: 10 }, action: { color: colors.primaryDark, fontWeight: '600', paddingVertical: 8 },
 });

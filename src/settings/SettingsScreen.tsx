@@ -43,10 +43,10 @@ export default function SettingsScreen({ onBusyChange, onOpenDebug }: { onBusyCh
     <View style={styles.row}><Host matchContents seedColor={colors.primary} colorScheme="light"><Switch label="Голосовой ответ" value={enabled} onValueChange={changeVoice} disabled={busy} /></Host></View>
     <Text style={styles.heading}>Whisper Tiny Multilingual</Text>
     <Text>{downloaded ? 'Модель загружена (около 75 МБ).' : 'Модель ещё не загружена (около 75 МБ).'}</Text>
-    <Pressable onPress={loadModel} disabled={busy}><Text style={styles.link}>{downloaded ? 'Проверить модель' : 'Загрузить модель'}</Text></Pressable>
-    {downloaded && <Pressable onPress={confirmDelete} disabled={busy}><Text style={styles.link}>Удалить модель</Text></Pressable>}
+    <Pressable style={({ pressed }) => ({ opacity: busy ? 0.45 : pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={loadModel} disabled={busy}><Text style={styles.link}>{downloaded ? 'Проверить модель' : 'Загрузить модель'}</Text></Pressable>
+    {downloaded && <Pressable style={({ pressed }) => ({ opacity: busy ? 0.45 : pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={confirmDelete} disabled={busy}><Text style={styles.link}>Удалить модель</Text></Pressable>}
     {message ? <Text style={styles.message}>{message}</Text> : null}
-    {__DEV__ && <Pressable onPress={onOpenDebug} disabled={busy}><Text style={styles.link}>Проверка распознавания →</Text></Pressable>}
+    {__DEV__ && <Pressable style={({ pressed }) => ({ opacity: busy ? 0.45 : pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={onOpenDebug} disabled={busy}><Text style={styles.link}>Проверка распознавания →</Text></Pressable>}
   </View>;
 }
 const styles = StyleSheet.create({ container: { padding: 24 }, title: { color: colors.text, fontSize: 32, fontWeight: '800', marginBottom: 24 },

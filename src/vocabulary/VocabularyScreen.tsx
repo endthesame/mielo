@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { Deck } from '../decks/deck';
 import type { VocabularyItem, VocabularyRepository } from './vocabulary';
-import Examples from './Examples';
+import Examples, { type ExampleDraft } from './Examples';
 import WordImage from '../media/WordImage';
 import ImportWords from './import/ImportWords';
 import { colors, spacing, radius, fontSize } from '../theme';
@@ -17,7 +17,9 @@ export default function VocabularyScreen({ deck, repository, onReview }: { deck:
   const [note, setNote] = useState('');
   const [alternatives, setAlternatives] = useState('');
   const [query, setQuery] = useState('');
-  const [visibleCount, setVisibleCount] = useState(50);
+  const listRef = useRef<FlatList<VocabularyItem>>(null);
+  const [drafts, setDrafts] = useState<Record<string, ExampleDraft>>({});
+  const [exampleRevisions, setExampleRevisions] = useState<Record<string, number>>({});
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [examplesFor, setExamplesFor] = useState<string | null>(null);
@@ -64,6 +66,7 @@ export default function VocabularyScreen({ deck, repository, onReview }: { deck:
 
   function edit(item: VocabularyItem) {
     setEditingId(item.id); setFormOpen(true);
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
     setText(item.text); setTranslation(item.translation); setReading(item.reading ?? ''); setNote(item.meaningNote ?? '');
     setAlternatives(item.acceptedAnswers.join('\n'));
     setError(null);
@@ -79,6 +82,8 @@ export default function VocabularyScreen({ deck, repository, onReview }: { deck:
         try {
           await repository.remove(item.id);
           setItems((current) => current.filter((word) => word.id !== item.id));
+          setDrafts((current) => { const next = { ...current }; delete next[item.id]; return next; });
+          setExamplesFor((current) => current === item.id ? null : current);
           if (editingId === item.id) { setEditingId(null); setText(''); setTranslation(''); setReading(''); setNote(''); setAlternatives(''); }
           setError(null);
         } catch (err) {
@@ -89,15 +94,18 @@ export default function VocabularyScreen({ deck, repository, onReview }: { deck:
     ]);
   }
 
-  const normalizedQuery = query.trim().toLocaleLowerCase();
-  const visibleItems = items.filter((item) => [item.text, item.translation, item.reading, item.meaningNote]
-    .some((value) => value?.toLocaleLowerCase().includes(normalizedQuery)));
-
-  if (importOpen) return <ImportWords deckId={deck.id} existingWords={items.map((item) => item.text)} repository={repository}
-    onComplete={async () => { setItems(await repository.listByDeck(deck.id)); }} onClose={() => setImportOpen(false)} />;
+  const visibleItems = useMemo(() => {
+    const normalizedQuery = query.trim().toLocaleLowerCase();
+    return items.filter((item) => [item.text, item.translation, item.reading, item.meaningNote]
+      .some((value) => value?.toLocaleLowerCase().includes(normalizedQuery)));
+  }, [items, query]);
 
   return (
-    <View style={styles.container}>
+    <>
+    <View style={{ flex: 1, display: importOpen ? 'none' : 'flex' }}>
+    <FlatList ref={listRef} data={visibleItems} keyExtractor={(item) => item.id} contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" contentInsetAdjustmentBehavior="automatic"
+      ListHeaderComponent={<View>
       <Text style={styles.title}>{deck.name}</Text>
       <Text style={styles.language}>{languageName(deck.targetLanguage)}</Text>
       <View style={styles.hero}><View style={styles.accentMark} /><Text style={styles.heroTitle}>Пора освежить слова?</Text><Text style={styles.hint}>Продолжите учиться в своём темпе.</Text>
@@ -114,8 +122,10 @@ export default function VocabularyScreen({ deck, repository, onReview }: { deck:
       <Pressable style={({ pressed }) => ({ opacity: saving ? 0.45 : pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={() => { setEditingId(null); setText(''); setTranslation(''); setReading(''); setNote(''); setAlternatives(''); setError(null); setFormOpen(false); }} disabled={saving}><Text style={styles.action}>Отменить</Text></Pressable></View>}
       {error && <Text style={styles.error}>{error}</Text>}
       <Text style={styles.label}>Слова</Text>
-      <TextInput style={styles.input} placeholder="Поиск по словам" value={query} onChangeText={(value) => { setQuery(value); setVisibleCount(50); }} />
-      {loading ? <Text style={styles.hint}>Загружаем…</Text> : items.length === 0 ? <Text style={styles.hint}>В колоде пока нет слов.</Text> : visibleItems.length === 0 ? <Text style={styles.hint}>Ничего не найдено.</Text> : visibleItems.slice(0, visibleCount).map((item) => (
+      <TextInput style={styles.input} placeholder="Поиск по словам" value={query} onChangeText={setQuery} />
+      </View>}
+      ListEmptyComponent={loading ? <Text style={styles.hint}>Загружаем…</Text> : items.length === 0 ? <Text style={styles.hint}>В колоде пока нет слов.</Text> : <Text style={styles.hint}>Ничего не найдено.</Text>}
+      renderItem={({ item }) => (
         <View style={styles.word} key={item.id}>
           <Text style={styles.wordText}>{item.text} — {item.translation}</Text>
           {item.reading && <Text style={styles.hint}>{item.reading}</Text>}
@@ -125,13 +135,17 @@ export default function VocabularyScreen({ deck, repository, onReview }: { deck:
             <Pressable style={({ pressed }) => ({ opacity: saving ? 0.45 : pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={() => confirmRemove(item)} disabled={saving}><Text style={styles.action}>Удалить</Text></Pressable>
             <Pressable style={({ pressed }) => ({ opacity: saving ? 0.45 : pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={() => setExamplesFor(examplesFor === item.id ? null : item.id)}><Text style={styles.action}>Материалы</Text></Pressable>
           </View>
-          {examplesFor === item.id && <><WordImage wordId={item.id} /><Examples wordId={item.id} /></>}
+          {examplesFor === item.id && <><WordImage wordId={item.id} revision={exampleRevisions[item.id] ?? 0} onChanged={() => setExampleRevisions((current) => ({ ...current, [item.id]: (current[item.id] ?? 0) + 1 }))} /><Examples wordId={item.id} revision={exampleRevisions[item.id] ?? 0} onChanged={() => setExampleRevisions((current) => ({ ...current, [item.id]: (current[item.id] ?? 0) + 1 }))} draft={drafts[item.id] ?? { text: '', translation: '' }} onDraftChange={(draft) => setDrafts((current) => ({ ...current, [item.id]: draft }))} onSaved={(saved) => { setExampleRevisions((current) => ({ ...current, [item.id]: (current[item.id] ?? 0) + 1 })); setDrafts((current) => {
+            const draft = current[item.id];
+            if (!draft || draft.text !== saved.text || draft.translation !== saved.translation) return current;
+            const next = { ...current }; delete next[item.id]; return next;
+          }); }} /></>}
         </View>
-      ))}
-      {!loading && visibleItems.length > visibleCount && <Pressable style={({ pressed }) => ({ opacity: saving ? 0.45 : pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={() => setVisibleCount((count) => count + 50)}>
-        <Text style={styles.action}>Показать ещё · показано {visibleCount} из {visibleItems.length}</Text>
-      </Pressable>}
+      )} />
     </View>
+    {importOpen && <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive"><ImportWords deckId={deck.id} existingWords={items.map((item) => item.text)} repository={repository}
+      onComplete={async () => { setItems(await repository.listByDeck(deck.id)); }} onClose={() => setImportOpen(false)} /></ScrollView>}
+    </>
   );
 }
 

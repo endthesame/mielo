@@ -4,7 +4,7 @@ import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { getImage, removeImage, replaceImage } from './media-store';
 
-export default function WordImage({ wordId }: { wordId: string }) {
+export default function WordImage({ wordId, revision, onChanged }: { wordId: string; revision: number; onChanged: () => void }) {
   const [uri, setUri] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -12,20 +12,20 @@ export default function WordImage({ wordId }: { wordId: string }) {
     let active = true;
     getImage(wordId).then((result) => { if (active) setUri(result); }).catch((err) => { console.error(err); if (active) setError('Не удалось загрузить изображение.'); });
     return () => { active = false; };
-  }, [wordId]);
+  }, [wordId, revision]);
   async function choose() {
     if (busy) return;
     setBusy(true); setError('');
     try {
       const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 1 });
-      if (!result.canceled) setUri(await replaceImage(wordId, result.assets[0].uri, result.assets[0].mimeType));
+      if (!result.canceled) { setUri(await replaceImage(wordId, result.assets[0].uri, result.assets[0].mimeType)); onChanged(); }
     } catch (err) { console.error(err); setError('Не удалось сохранить изображение.'); }
     finally { setBusy(false); }
   }
   function confirmRemove() {
     Alert.alert('Удалить изображение?', '', [{ text: 'Отмена', style: 'cancel' }, { text: 'Удалить', style: 'destructive', onPress: async () => {
       setBusy(true);
-      try { await removeImage(wordId); setUri(null); setError(''); }
+      try { await removeImage(wordId); setUri(null); setError(''); onChanged(); }
       catch (err) { console.error(err); setError('Не удалось удалить изображение.'); }
       finally { setBusy(false); }
     } }]);

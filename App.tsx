@@ -52,11 +52,11 @@ function AppContent() {
       }}><Text style={styles.navLink}>← {screen === 'speech' ? 'Настройки' : selectedDeck || screen === 'settings' ? 'Мои колоды' : 'Главная'}</Text></Pressable>
       {screen === 'decks' && !selectedDeck && <Pressable accessibilityRole="button" onPress={() => setScreen('settings')}><Text style={styles.navLink}>Настройки</Text></Pressable>}
     </View>}
-    {screen === 'speech' ? <SpeechScreen /> : <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive">
-      {screen === 'settings' ? <SettingsScreen onBusyChange={setSettingsBusy} onOpenDebug={() => setScreen('speech')} /> : selectedDeck ? reviewing ?
-        <ReviewScreen deck={selectedDeck} repository={reviewRepository} onClose={() => setReviewing(false)} /> :
-        <VocabularyScreen key={selectedDeck.id} deck={selectedDeck} repository={vocabularyRepository} onReview={() => setReviewing(true)} /> :
-        <DecksScreen repository={deckRepository} onOpenDeck={setSelectedDeck} />}
+    {screen === 'speech' ? <SpeechScreen /> : screen === 'decks' && selectedDeck ? <>
+      <View style={{ flex: 1, display: reviewing ? 'none' : 'flex' }}><VocabularyScreen key={selectedDeck.id} deck={selectedDeck} repository={vocabularyRepository} onReview={() => setReviewing(true)} /></View>
+      {reviewing && <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive"><ReviewScreen deck={selectedDeck} repository={reviewRepository} onClose={() => setReviewing(false)} /></ScrollView>}
+    </> : <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive">
+      {screen === 'settings' ? <SettingsScreen onBusyChange={setSettingsBusy} onOpenDebug={() => setScreen('speech')} /> : <DecksScreen repository={deckRepository} onOpenDeck={setSelectedDeck} />}
     </ScrollView>}
   </SafeAreaView>;
 }

@@ -1,1 +1,1 @@
-export { default } from '../navigation/welcome-screen';
+export { default } from './decks/index';

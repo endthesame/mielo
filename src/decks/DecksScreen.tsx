@@ -5,11 +5,13 @@ import { colors, spacing, radius, fontSize } from '../theme';
 import Button from '../components/Button';
 import { Host, Icon, Picker } from '@expo/ui';
 import { languageName, languages, normalizeLanguageCode } from '../languages/languages';
+import { loadDeckCounts, type DeckCounts } from './deck-counts';
 
 export default function DecksScreen({ repository, onOpenDeck }: { repository: DeckRepository; onOpenDeck: (deck: Deck) => void }) {
   const [decks, setDecks] = useState<Deck[]>([]);
-  const [dueCounts, setDueCounts] = useState<Record<string, number>>({});
-  const [wordCounts, setWordCounts] = useState<Record<string, number>>({});
+  const [counts, setCounts] = useState<Record<string, DeckCounts>>({});
+  const [listError, setListError] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [name, setName] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -22,25 +24,23 @@ export default function DecksScreen({ repository, onOpenDeck }: { repository: De
 
   useEffect(() => {
     let active = true;
+    setLoading(true);
+    setListError(false);
     repository.list().then(async (items) => {
-      const now = new Date();
-      const counts = await Promise.all(items.map(async (deck) => {
-        const [due, words] = await Promise.all([repository.countDue(deck.id, now), repository.countWords(deck.id)]);
-        return { id: deck.id, due, words };
-      }));
-      if (active) {
-        setDecks(items);
-        setDueCounts(Object.fromEntries(counts.map(({ id, due }) => [id, due])));
-        setWordCounts(Object.fromEntries(counts.map(({ id, words }) => [id, words])));
-      }
+      if (!active) return;
+      setDecks(items);
+      setCounts({});
+      setLoading(false);
+      const loadedCounts = await loadDeckCounts(repository, items, new Date());
+      if (active) setCounts((current) => ({ ...current, ...loadedCounts }));
     }).catch((err) => {
       console.error('Failed to load decks:', err);
-      if (active) setError('Не удалось открыть колоды. Перезапустите приложение.');
+      if (active) setListError(true);
     }).finally(() => {
       if (active) setLoading(false);
     });
     return () => { active = false; };
-  }, [repository]);
+  }, [repository, loadAttempt]);
 
   async function createDeck() {
     if (savingRef.current || loading) return;
@@ -59,6 +59,7 @@ export default function DecksScreen({ repository, onOpenDeck }: { repository: De
     try {
       const deck = editingId ? await repository.rename(editingId, name) : await repository.create({ name, targetLanguage: targetLanguage!, translationLanguage: 'ru' });
       setDecks((current) => editingId ? current.map((previous) => previous.id === deck.id ? deck : previous) : [...current, deck]);
+      if (!editingId) setCounts((current) => ({ ...current, [deck.id]: { due: 0, words: 0 } }));
       setName('');
       setEditingId(null);
       setFormOpen(false);
@@ -105,16 +106,16 @@ export default function DecksScreen({ repository, onOpenDeck }: { repository: De
       <Button title={saving ? 'Сохраняем…' : editingId ? 'Сохранить название' : 'Создать колоду'} onPress={createDeck} disabled={loading} busy={saving} style={styles.createButton} />
       <Pressable style={({ pressed }) => ({ opacity: saving ? 0.45 : pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={() => { setEditingId(null); setName(''); setError(null); setFormOpen(false); }} disabled={saving}><Text style={styles.link}>Отменить</Text></Pressable></View>}
       {error && <Text style={styles.error}>{error}</Text>}
-      {loading ? <Text style={styles.hint}>Загружаем колоды…</Text> : decks.length === 0 ? (
+      {loading ? <Text style={styles.hint}>Загружаем колоды…</Text> : listError ? <><Text style={styles.error}>Не удалось загрузить колоды.</Text><Button title="Повторить" variant="text" onPress={() => setLoadAttempt((value) => value + 1)} /></> : decks.length === 0 ? (
         <View style={styles.empty}><View style={styles.emptyMark}><Host matchContents pointerEvents="none"><Icon name="rectangle.stack" color={colors.primaryDark} size={27} /></Host></View><Text style={styles.emptyTitle}>Здесь появятся ваши колоды</Text><Text style={styles.hint}>Создайте первую и добавьте слова для изучения.</Text></View>
       ) : !formOpen && decks.map((deck) => (
         <View key={deck.id} style={styles.deckCard}>
-          <Pressable style={({ pressed }) => pressed && styles.pressed} onPress={() => onOpenDeck(deck)} accessibilityRole="button" accessibilityLabel={`Открыть колоду ${deck.name}. Всего слов: ${wordCounts[deck.id] ?? 0}. К повторению: ${dueCounts[deck.id] ?? 0}`}>
+          <Pressable style={({ pressed }) => pressed && styles.pressed} onPress={() => onOpenDeck(deck)} accessibilityRole="button" accessibilityLabel={`Открыть колоду ${deck.name}. Всего слов: ${countLabel(counts[deck.id]?.words)}. К повторению: ${countLabel(counts[deck.id]?.due)}`}>
             <View style={styles.deckHeader}><View style={styles.deckMark}><Host matchContents pointerEvents="none"><Icon name="rectangle.stack" size={19} color={colors.primaryDark} /></Host></View><Text style={styles.deckLanguage}>{languageName(deck.targetLanguage).toLocaleUpperCase()}</Text></View>
             <Text style={styles.deck}>{deck.name}</Text>
             <View style={styles.stats}>
-              <Text style={styles.dueText}>Всего слов: {wordCounts[deck.id] ?? 0}</Text>
-              <View style={styles.dueRow}><View style={styles.dueDot} /><Text style={styles.dueText}>К повторению: {dueCounts[deck.id] ?? 0}</Text></View>
+              <Text style={styles.dueText}>Всего слов: {countLabel(counts[deck.id]?.words)}</Text>
+              <View style={styles.dueRow}><View style={styles.dueDot} /><Text style={styles.dueText}>К повторению: {countLabel(counts[deck.id]?.due)}</Text></View>
             </View>
           </Pressable>
           <View style={styles.actions}>
@@ -123,8 +124,14 @@ export default function DecksScreen({ repository, onOpenDeck }: { repository: De
           </View>
         </View>
       ))}
+      {!loading && !listError && !formOpen && decks.some((deck) => counts[deck.id]?.due === null || counts[deck.id]?.words === null) &&
+        <Button title="Обновить счётчики" variant="text" onPress={() => setLoadAttempt((value) => value + 1)} />}
     </View>
   );
+}
+
+function countLabel(count: number | null | undefined): string {
+  return count === undefined ? 'загрузка…' : count === null ? 'недоступно' : String(count);
 }
 
 const styles = StyleSheet.create({

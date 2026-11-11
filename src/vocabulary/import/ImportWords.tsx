@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { File } from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
@@ -14,6 +14,7 @@ type Props = {
   repository: VocabularyRepository;
   onComplete: () => Promise<void>;
   onClose: () => void;
+  onBusyChange: (busy: boolean) => void;
 };
 
 const delimiters: { value: ImportDelimiter; label: string }[] = [
@@ -22,12 +23,13 @@ const delimiters: { value: ImportDelimiter; label: string }[] = [
   { value: '\t', label: 'Табуляция' },
 ];
 
-export default function ImportWords({ deckId, existingWords, repository, onComplete, onClose }: Props) {
+export default function ImportWords({ deckId, existingWords, repository, onComplete, onClose, onBusyChange }: Props) {
   const [text, setText] = useState('');
   const [delimiter, setDelimiter] = useState<ImportDelimiter>(';');
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
+  useEffect(() => { onBusyChange(busy); return () => onBusyChange(false); }, [busy, onBusyChange]);
   const [completed, setCompleted] = useState(false);
   const locked = useRef(false);
 

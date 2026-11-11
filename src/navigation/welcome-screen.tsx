@@ -1,29 +1,11 @@
-import { useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, Pressable, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { deckRepository } from './src/database/deck-repository';
-import DecksScreen from './src/decks/DecksScreen';
-import SpeechScreen from './src/SpeechScreen';
-import { vocabularyRepository } from './src/database/vocabulary-repository';
-import type { Deck } from './src/decks/deck';
-import VocabularyScreen from './src/vocabulary/VocabularyScreen';
-import ReviewScreen from './src/review/ReviewScreen';
-import { reviewRepository } from './src/review/review-repository';
-import SettingsScreen from './src/settings/SettingsScreen';
-import { colors } from './src/theme';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useRouter } from 'expo-router';
+import { colors } from '../theme';
 
-export default function App() {
-  return <GestureHandlerRootView style={{ flex: 1 }}><AppContent /></GestureHandlerRootView>;
-}
-
-function AppContent() {
-  const [screen, setScreen] = useState<'welcome' | 'decks' | 'speech' | 'settings'>('welcome');
-  const [selectedDeck, setSelectedDeck] = useState<Deck | null>(null);
-  const [reviewing, setReviewing] = useState(false);
-  const [settingsBusy, setSettingsBusy] = useState(false);
-
-  if (screen === 'welcome') return <SafeAreaView style={styles.welcome}>
+export default function WelcomeScreen() {
+  const router = useRouter();
+  return <SafeAreaView style={styles.welcome}>
     <StatusBar style="light" />
     <ScrollView contentContainerStyle={styles.welcomeContent}>
       <Text style={styles.brand}>mielo.</Text>
@@ -37,27 +19,8 @@ function AppContent() {
           <View style={styles.cardLine} /><Text style={styles.cardTranslation}>здравствуйте</Text>
         </View><View style={styles.orangeDot} />
       </View>
-      <Pressable accessibilityRole="button" onPress={() => setScreen('decks')} style={({ pressed }) => [styles.start, pressed && { opacity: 0.8 }]}><Text style={styles.startText}>Мои колоды  →</Text></Pressable>
+      <Pressable accessibilityRole="button" onPress={() => router.push('/decks')} style={({ pressed }) => [styles.start, pressed && { opacity: 0.8 }]}><Text style={styles.startText}>Мои колоды  →</Text></Pressable>
     </ScrollView>
-  </SafeAreaView>;
-
-  return <SafeAreaView style={styles.container}>
-    <StatusBar style="dark" />
-    {!reviewing && <View style={styles.navigation}>
-      <Pressable accessibilityRole="button" disabled={settingsBusy} onPress={() => {
-        if (screen === 'speech') setScreen('settings');
-        else if (screen === 'settings') setScreen('decks');
-        else if (selectedDeck) setSelectedDeck(null);
-        else setScreen('welcome');
-      }}><Text style={styles.navLink}>← {screen === 'speech' ? 'Настройки' : selectedDeck || screen === 'settings' ? 'Мои колоды' : 'Главная'}</Text></Pressable>
-      {screen === 'decks' && !selectedDeck && <Pressable accessibilityRole="button" onPress={() => setScreen('settings')}><Text style={styles.navLink}>Настройки</Text></Pressable>}
-    </View>}
-    {screen === 'speech' ? <SpeechScreen /> : screen === 'decks' && selectedDeck ? <>
-      <View style={{ flex: 1, display: reviewing ? 'none' : 'flex' }}><VocabularyScreen key={selectedDeck.id} deck={selectedDeck} repository={vocabularyRepository} onReview={() => setReviewing(true)} /></View>
-      {reviewing && <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive"><ReviewScreen deck={selectedDeck} repository={reviewRepository} onClose={() => setReviewing(false)} /></ScrollView>}
-    </> : <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive">
-      {screen === 'settings' ? <SettingsScreen onBusyChange={setSettingsBusy} onOpenDebug={() => setScreen('speech')} /> : <DecksScreen repository={deckRepository} onOpenDeck={setSelectedDeck} />}
-    </ScrollView>}
   </SafeAreaView>;
 }
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { Deck } from '../decks/deck';
 import type { VocabularyItem, VocabularyRepository } from './vocabulary';
@@ -8,6 +8,7 @@ import ImportWords from './import/ImportWords';
 import { colors, spacing, radius, fontSize } from '../theme';
 import Button from '../components/Button';
 import { languageName } from '../languages/languages';
+import { usePreventRemove } from 'expo-router/react-navigation';
 
 export default function VocabularyScreen({ deck, repository, onReview }: { deck: Deck; repository: VocabularyRepository; onReview: () => void }) {
   const [items, setItems] = useState<VocabularyItem[]>([]);
@@ -24,10 +25,21 @@ export default function VocabularyScreen({ deck, repository, onReview }: { deck:
   const [editingId, setEditingId] = useState<string | null>(null);
   const [examplesFor, setExamplesFor] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [importBusy, setImportBusy] = useState(false);
+  const onImportBusyChange = useCallback((busy: boolean) => setImportBusy(busy), []);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const savingRef = useRef(false);
+  const hasDraft = formOpen && [text, translation, reading, note, alternatives].some((value) => value.trim() !== '');
+  usePreventRemove(importOpen || saving || hasDraft, ({ repeat }) => {
+    if (saving || importBusy) return;
+    if (importOpen) { setImportOpen(false); return; }
+    Alert.alert('Закрыть редактор?', 'Несохранённые изменения будут потеряны.', [
+      { text: 'Продолжить редактирование', style: 'cancel' },
+      { text: 'Закрыть', style: 'destructive', onPress: repeat },
+    ]);
+  });
 
   useEffect(() => {
     let active = true;
@@ -144,7 +156,7 @@ export default function VocabularyScreen({ deck, repository, onReview }: { deck:
       )} />
     </View>
     {importOpen && <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive"><ImportWords deckId={deck.id} existingWords={items.map((item) => item.text)} repository={repository}
-      onComplete={async () => { setItems(await repository.listByDeck(deck.id)); }} onClose={() => setImportOpen(false)} /></ScrollView>}
+      onComplete={async () => { setItems(await repository.listByDeck(deck.id)); }} onClose={() => setImportOpen(false)} onBusyChange={onImportBusyChange} /></ScrollView>}
     </>
   );
 }

@@ -7,6 +7,13 @@ import { decks } from './schema';
 import { deleteImageFiles } from '../media/media-store';
 
 export const deckRepository: DeckRepository = {
+  async getById(id) {
+    const db = drizzle(await getDatabase());
+    const row = await db.select().from(decks).where(and(eq(decks.id, id), isNull(decks.deletedAt))).get();
+    if (!row) return null;
+    const { deletedAt: _deletedAt, ...deck } = row;
+    return deck;
+  },
   async countWords(id) {
     const db = await getDatabase();
     const row = await db.getFirstAsync<{ count: number }>(`SELECT count(*) AS count FROM vocabulary_items v

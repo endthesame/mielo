@@ -14,6 +14,7 @@ export type NewDeck = {
 };
 
 export interface DeckRepository {
+  getById(id: string): Promise<Deck | null>;
   list(): Promise<Deck[]>;
   create(input: NewDeck): Promise<Deck>;
   rename(id: string, name: string): Promise<Deck>;

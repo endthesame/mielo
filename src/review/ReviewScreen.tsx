@@ -13,6 +13,7 @@ import { colors, spacing, radius, fontSize } from '../theme';
 import Button from '../components/Button';
 import { initialReviewFlow, reviewFlowReducer, type RecallChoice } from './review-flow';
 import SwipeCard from './SwipeCard';
+import { usePreventRemove } from 'expo-router/react-navigation';
 
 const ratings: { title: string; value: Grade }[] = [
   { title: 'Снова', value: Rating.Again }, { title: 'Трудно', value: Rating.Hard },
@@ -26,6 +27,7 @@ export default function ReviewScreen({ deck, repository, onClose }: { deck: Deck
   const [answer, setAnswer] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  usePreventRemove(saving, () => {});
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const busy = useRef(false);
   const revealLocked = useRef(false);

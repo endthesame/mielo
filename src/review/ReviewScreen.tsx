@@ -68,7 +68,7 @@ export default function ReviewScreen({ deck, repository, onClose }: { deck: Deck
     <Text style={styles.title}>Повторение · {deck.name}</Text>
     {loading ? <Text>Загружаем…</Text> : !card && error ? null : !card ? <><View style={styles.card}><Text style={styles.cue}>На сегодня всё</Text><Text style={styles.hint}>Карточек к повторению сейчас нет.</Text></View><Pressable style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1, minHeight: 44, justifyContent: 'center' })} accessibilityRole="button" onPress={load}><Text style={styles.link}>Обновить</Text></Pressable></> : <>
       <Text style={styles.hint}>Осталось в этой сессии: {queue.length}</Text>
-      <SwipeCard key={card.cardId} cue={card.translation} image={card.imageName ? imageUri(card.imageName) : undefined} revealed={flow.revealed} answer={card.text} reading={card.reading} note={card.meaningNote} example={card.example} onReveal={showAnswer} onRecall={selfAssess} />
+      <SwipeCard key={card.cardId} cue={card.translation} image={card.imageName ? imageUri(card.imageName) : undefined} revealed={flow.revealed} answer={card.text} language={deck.targetLanguage} reading={card.reading} note={card.meaningNote} example={card.example} onReveal={showAnswer} onRecall={selfAssess} />
       {!flow.revealed ? <>
         <View style={styles.entry}><TextInput style={[styles.input, styles.entryInput]} placeholder="Введите ответ" value={answer} onChangeText={setAnswer} onSubmitEditing={showAnswer} returnKeyType="done" accessibilityLabel="Введите ответ" />
         {voiceEnabled && voiceSupported && <VoiceAnswer key={card.cardId}

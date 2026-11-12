@@ -81,7 +81,7 @@ export default function VoiceAnswer({ language, variants, onResult, onMatch }: P
         callbacks.current.onResult(text);
         const kind = matchLiveAnswer(text, callbacks.current.variants);
         const normalized = normalizeAnswer(text);
-        // Для нечёткого совпадения ждём два одинаковых результата.
+        // Require two identical results for a fuzzy match.
         const candidate = kind ? `${kind}:${normalized}` : '';
         const accepted = kind === 'exact' || (candidate !== '' && lastCandidate.current === candidate);
         lastCandidate.current = candidate;

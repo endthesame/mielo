@@ -11,7 +11,7 @@ export class ExpoPronunciationEngine implements PronunciationEngine {
     const voices = await Speech.getAvailableVoicesAsync();
     if (request !== this.generation) return;
 
-    // Язык колоды — ISO-код, системные голоса обычно используют BCP 47 (например, ja-JP).
+    // Decks use ISO language codes; system voices usually use BCP 47 (for example, ja-JP).
     const code = language.toLowerCase();
     const voice = voices.find((item) => item.language.toLowerCase() === code)
       ?? voices.find((item) => item.language.toLowerCase().split('-')[0] === code);

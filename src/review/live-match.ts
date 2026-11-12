@@ -1,6 +1,6 @@
 import { normalizeAnswer } from './evaluate-answer';
 
-// Нечёткое совпадение: одна замена, вставка или удаление для слов от 5 символов.
+// Fuzzy matching allows one substitution, insertion, or deletion for words of at least five characters.
 function oneEditApart(left: string, right: string): boolean {
   const a = Array.from(left), b = Array.from(right);
   if (Math.abs(a.length - b.length) > 1) return false;

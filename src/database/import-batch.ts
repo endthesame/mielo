@@ -2,7 +2,7 @@ import type { SQLiteDatabase, SQLiteStatement } from 'expo-sqlite';
 import { createEmptyCard } from 'ts-fsrs';
 import { importWordKey, MAX_IMPORT_ROWS, type ImportRow } from '../vocabulary/import/parse-import';
 
-// Вызывается внутри транзакции. Повторно проверяем колоду и дубликаты прямо перед записью.
+// Called inside a transaction. Recheck the deck and duplicates immediately before writing.
 export async function insertImportBatch(tx: SQLiteDatabase, deckId: string, rows: ImportRow[], createId: () => string, now: Date): Promise<{ added: number; skipped: number }> {
   if (!deckId || rows.length === 0 || rows.length > MAX_IMPORT_ROWS) throw new Error('Недопустимое количество записей.');
   const deck = await tx.getFirstAsync<{ id: string }>('SELECT id FROM decks WHERE id = ? AND deleted_at IS NULL', deckId);

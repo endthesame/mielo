@@ -1,4 +1,4 @@
-// Коды языков приложения не зависят от конкретного движка распознавания.
+// Application language codes are independent of the recognition engine.
 export type SpeechLanguage = string;
 
 export type SpeechCapabilities = {

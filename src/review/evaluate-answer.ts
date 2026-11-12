@@ -1,4 +1,4 @@
-// Сравниваем только явно заданные формы; чтение не преобразуется в кандзи автоматически.
+// Compare only explicitly defined forms; readings are not automatically converted to kanji.
 export function normalizeAnswer(value: string): string {
   return value.normalize('NFKC').trim().toLocaleLowerCase().replace(/^[\p{P}\p{S}\s]+|[\p{P}\p{S}\s]+$/gu, '').replace(/\s+/gu, ' ');
 }

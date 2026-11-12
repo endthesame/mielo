@@ -1,6 +1,6 @@
 import { fsrs, generatorParameters, type CardInput, type Grade } from 'ts-fsrs';
 
-// Версия и параметры сохраняются в журнале для воспроизводимости.
+// Store the version and parameters in the review log for reproducibility.
 export const FSRS_VERSION = 'ts-fsrs@5.4.2';
 export const FSRS_PARAMETERS = generatorParameters({
   request_retention: 0.9,

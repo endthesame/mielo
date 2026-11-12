@@ -4,7 +4,7 @@ export type PronunciationEvents = {
   onError: () => void;
 };
 
-// Синтез речи отделён от распознавания и от конкретного поставщика голоса.
+// Speech synthesis is independent of recognition and the voice provider.
 export interface PronunciationEngine {
   speak(text: string, language: string, events: PronunciationEvents): Promise<void>;
   stop(): Promise<void>;

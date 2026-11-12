@@ -5,7 +5,7 @@ import { getDatabase } from '../database/database';
 const images = new Directory(Paths.document, 'media', 'images');
 
 export function imageUri(fileName: string): string {
-  // Идентификатор берётся только из нашей базы, не из абсолютного пути устройства.
+  // Use the identifier stored in the database, not an absolute device path.
   if (!/^[a-f0-9-]+\.(jpg|png|webp|heic)$/i.test(fileName)) throw new Error('Некорректное имя изображения.');
   return new File(images, fileName).uri;
 }

@@ -21,7 +21,7 @@ export type UpdateVocabularyItem = Omit<NewVocabularyItem, 'deckId'>;
 
 export interface VocabularyRepository {
   listByDeck(deckId: string): Promise<VocabularyItem[]>;
-  // Слово, карточка и её начальное состояние сохраняются вместе.
+  // The word, card, and initial review state are saved together.
   create(input: NewVocabularyItem): Promise<VocabularyItem>;
   update(id: string, input: UpdateVocabularyItem): Promise<VocabularyItem>;
   remove(id: string): Promise<void>;

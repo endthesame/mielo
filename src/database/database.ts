@@ -127,8 +127,8 @@ async function migrate(db: SQLiteDatabase): Promise<void> {
   });
 }
 
-// Удаляем только созданные приложением файлы, не связанные ни с одним объектом БД.
-// Это завершает очистку, если приложение было закрыто между изменением БД и файла.
+// Remove only app-created files that are not referenced by any database record.
+// This completes cleanup if the app closed between updating the database and deleting a file.
 async function removeUnreferencedImages(db: SQLiteDatabase): Promise<void> {
   const directory = new Directory(Paths.document, 'media', 'images');
   if (!directory.exists) return;

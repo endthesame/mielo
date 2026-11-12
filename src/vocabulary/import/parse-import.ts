@@ -21,7 +21,7 @@ export function parseImport(text: string, delimiter: ImportDelimiter, existingWo
   const duplicates: { line: number; text: string }[] = [];
   const seen = new Set(existingWords.map(importWordKey));
   let duplicateCount = 0, totalRows = 0, currentLine = 1, previousCursor = 0;
-  // UTF-8 BOM не является частью первого слова.
+  // The UTF-8 BOM is not part of the first word.
   const source = text.replace(/^\uFEFF/, '');
   Papa.parse<string[]>(source, {
     delimiter,

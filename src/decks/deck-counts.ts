@@ -2,7 +2,7 @@ import type { Deck, DeckRepository } from './deck';
 
 export type DeckCounts = { due: number | null; words: number | null };
 
-// Ошибка одного счётчика не скрывает ни колоды, ни остальные значения.
+// A failed count does not hide decks or other counts.
 export async function loadDeckCounts(repository: DeckRepository, decks: Deck[], now: Date): Promise<Record<string, DeckCounts>> {
   const entries = await Promise.all(decks.map(async (deck) => {
     const [due, words] = await Promise.allSettled([

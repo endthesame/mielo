@@ -1,4 +1,4 @@
-// Один запрос к движку за раз, без очереди устаревших аудиофрагментов.
+// Process one request at a time without queuing stale audio chunks.
 export class LiveTranscriber {
   private samples = new Int16Array(0);
   private lastSpeechAt: number | null = null;
@@ -25,7 +25,7 @@ export class LiveTranscriber {
       if (this.waitingForSpeech) { this.generation++; this.waitingForSpeech = false; }
       this.lastSpeechAt = now;
     }
-    // Не отправляем тишину в Whisper: на ней модель иногда возвращает выдуманный текст.
+    // Skip silence because Whisper can hallucinate text from it.
     if (this.lastSpeechAt === null || now - this.lastSpeechAt > 1400) {
       this.samples = new Int16Array(0);
       this.waitingForSpeech = true;

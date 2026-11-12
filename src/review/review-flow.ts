@@ -14,7 +14,7 @@ export type ReviewAction =
 
 export const initialReviewFlow: ReviewFlow = { revealed: false, recall: null, automaticMatch: null };
 
-// Кнопки и будущие свайпы отправляют одно и то же действие; оценка FSRS выбирается отдельно.
+// Buttons and swipes dispatch the same action; the FSRS rating is selected separately.
 export function reviewFlowReducer(state: ReviewFlow, action: ReviewAction): ReviewFlow {
   switch (action.type) {
     case 'self-assessment':

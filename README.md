@@ -1,35 +1,42 @@
 # Mielo
 
-Мобильное приложение для изучения слов с локальным хранением и повторениями.
+A mobile vocabulary learning app with spaced repetition. Decks, cards, and progress are stored locally. Mielo uses FSRS for scheduling and Whisper for speech recognition.
 
-## Запуск на iOS Simulator
+## Running on iOS
 
-Нужны macOS, Xcode с установленным iOS Simulator, CocoaPods и поддерживаемая версия Node.js (например, Node.js 24 или 26).
+Requires macOS, Xcode with iOS Simulator, CocoaPods, and Node.js. The project has been tested with Node.js 26.
 
 ```sh
 npm install
-npx expo run:ios
+npm run ios
 ```
 
-Эта команда создаёт и устанавливает development-сборку с нативными модулями. После первой сборки для обычной работы достаточно запустить сервер разработки:
+`npm run ios` builds and installs a development build on the simulator. After the first build, start the development server with:
 
 ```sh
 npm start
 ```
 
-Для остановки сервера нажмите `Ctrl+C` в терминале.
+Run `npm run ios` again after adding or changing native dependencies. Expo Go cannot run this project because Whisper requires a native module.
 
-При добавлении или изменении нативных библиотек сборку нужно создать заново командой `npx expo run:ios`. Expo Go не поддерживает нативный модуль Whisper.
+Download the speech model once from the app settings to use voice input. After that, speech recognition runs locally without an internet connection. Answer playback uses system voices, whose availability depends on the language.
 
-## Массовое добавление слов
+## Importing words
 
-Откройте колоду и выберите «Массовое добавление». Можно вставить текст или выбрать файл CSV, TXT или TSV в UTF-8. Укажите разделитель и проверьте данные перед добавлением. Один импорт ограничен 5000 записями и 5 МиБ; дубликаты по написанию в колоде пропускаются.
+Import words into a deck from a UTF-8 CSV, TXT, or TSV file, or paste text directly. Supported delimiters are comma, semicolon, and tab. Each import is limited to 5,000 entries and 5 MiB; duplicate words in the deck are skipped.
 
-Порядок полей без заголовка: слово, перевод, чтение, комментарий. Чтение и комментарий необязательны. Пример с разделителем `;`:
+Fields without a header: **word; translation; reading; comment**. The last two fields are optional:
 
 ```text
-食べる;есть;たべる;о приёме пищи
-猫;кошка;ねこ;
+食べる;to eat;たべる;about eating
+猫;cat;ねこ
 ```
 
-Если поле содержит разделитель или перенос строки, заключите его в двойные кавычки. Двойная кавычка внутри поля записывается как `""`.
+Enclose fields containing a delimiter or line break in double quotes. Escape a double quote inside a field as `""`.
+
+## Checks
+
+```sh
+npm run typecheck
+npm test
+```

@@ -8,7 +8,7 @@ type ModelFile = {
 
 type Fingerprint = { uri: string; size: number; modified: number };
 
-// Кэш живёт только до завершения процесса и не заменяет проверку при изменении файла.
+// The cache is process-local and does not replace verification when the file changes.
 export function createModelIntegrity(expectedSize: number, expectedHash: string) {
   let verified: Fingerprint | null = null;
   let generation = 0;
@@ -38,7 +38,7 @@ export function createModelIntegrity(expectedSize: number, expectedHash: string)
     return true;
   }
 
-  // Перенос не меняет содержимое, но отметку доверия сохраняем только при совпадении метаданных.
+  // A move preserves contents, but retain verification only when metadata still matches.
   function moved(from: Fingerprint | null, to: ModelFile) {
     const target = fingerprint(to);
     verified = from && target && from.size === target.size && from.modified === target.modified ? target : null;
